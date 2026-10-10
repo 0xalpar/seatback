@@ -3,7 +3,8 @@
 ## Executed checks
 - Node 24.19.0, pnpm 11.25.0, TypeScript 5.9.3. Workspace strict type checks and production builds pass,
   including the unchanged frontend foundation. Foundation/OpenAPI/RLS inventory checks and git diff --check pass.
-- 16 Node tests pass locally and in each hosted database configuration. Both SQL migrations execute
+- The backend suite covers both hosted database configurations (16 initial tests plus startup credential
+  redaction regression, 17 total). Both SQL migrations execute
   against PGlite and a PostgreSQL 16 service using the real pg driver, isolated schemas and DB roles.
   Coverage includes constraints/RLS/immutable snapshots, wallet signatures/nonces/sessions,
   CSRF/origin/cookies, private discovery, concurrent queue scheduling, QR expiry/co-signing,

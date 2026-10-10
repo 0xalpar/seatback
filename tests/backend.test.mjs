@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile,readdir} from 'node:fs/promises';
 import {createPrivateKey,sign,randomUUID} from 'node:crypto';
+import {spawnSync} from 'node:child_process';
 import {PGlite} from '@electric-sql/pglite';
 import {PostgresDatabase} from '../apps/api/dist/db.js';
 import {Auth} from '../apps/api/dist/auth.js';
@@ -215,4 +216,9 @@ test('economic HTTP idempotency returns the same real intent and rejects changed
   assert.equal((await db.query("SELECT * FROM events WHERE title='Idempotent event'")).rows.length,1);
   assert.equal((await db.query('SELECT * FROM transaction_intents')).rows.length,1);
  }finally{if(server)await new Promise(r=>server.close(r));await db.close();}
+});
+test('startup failures never print credential-bearing database URLs',()=>{
+ const secret='do-not-log-this-password';
+ const child=spawnSync(process.execPath,['apps/api/dist/index.js'],{encoding:'utf8',timeout:5000,env:{...process.env,SOLANA_CLUSTER:'devnet',WEB_ORIGIN:config.webOrigin,SESSION_SECRET:config.sessionSecret,ACCESS_CODE_PEPPER:config.codePepper,SOLANA_RPC_URL:'https://api.devnet.solana.com',SEATBACK_PROGRAM_ID:programId.toBase58(),GATE_KEYPAIR_PATH:'missing-development-key.json',DISPUTE_AUTHORITY:config.disputeAuthority,DATABASE_URL:'postgresql://username:'+secret+'@[invalid'}});
+ assert.equal(child.status,1);assert.match(child.stderr,/BACKEND_STARTUP_FAILED/);assert.ok(!child.stderr.includes(secret));
 });

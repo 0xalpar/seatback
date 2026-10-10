@@ -1,5 +1,8 @@
 import {createBackend} from "@seatback/api";
-const backend=await createBackend();
+const backend=await createBackend().catch(()=>{
+ console.error(JSON.stringify({code:"WORKER_STARTUP_FAILED",message:"Check backend configuration, database, signer and Devnet RPC."}));
+ process.exit(1);
+});
 let stopping=false;
 for(const signal of ["SIGINT","SIGTERM"] as const)process.on(signal,()=>{stopping=true;});
 try {

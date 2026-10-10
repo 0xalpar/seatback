@@ -11,6 +11,9 @@ See docs/release-integration.md and docs/backend-integration.md before starting 
 For operator-owned local keys, pinned WSL tools and guarded Devnet deployment/verification,
 follow [docs/devnet-deployment.md](docs/devnet-deployment.md). No deployment credentials are stored in CI.
 Use [docs/demo-runbook.md](docs/demo-runbook.md) for startup checks and the live presentation sequence.
+For the actual compiled-program demo without public faucet funding, use
+[docs/local-validator-demo.md](docs/local-validator-demo.md). It runs separately at localhost:5174
+and is explicitly labeled local; the ordinary Devnet configuration remains at localhost:5173.
 
 ## Quick start
 Prerequisites: Node 24.19.0 and pnpm 11.25.0. Use separate clones on the two computers.

@@ -1,7 +1,7 @@
 name: backend
 on:
   push:
-    branches: [backend]
+    branches: [backend, release/mvp]
   pull_request:
     branches: [main]
 permissions:

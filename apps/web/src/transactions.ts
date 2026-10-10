@@ -1,10 +1,11 @@
 import { PublicKey, Transaction } from "@solana/web3.js";
 import type { TxIntent, TxReceipt } from "@seatback/contracts";
 import idl from "../../../packages/chain-client/idl/seatback.json";
+import { webConfig } from "./config";
 
 type WalletSigner = { walletAddress: string; signTransaction(tx: Transaction): Promise<Transaction> };
-const configuredProgram = (import.meta as ImportMeta & {env?:{VITE_PROGRAM_ID?:string;VITE_API_BASE?:string}}).env?.VITE_PROGRAM_ID;
-const apiBase = ((import.meta as ImportMeta & {env?:{VITE_API_BASE?:string}}).env?.VITE_API_BASE ?? "http://localhost:3001").replace(/\/$/, "");
+const configuredProgram = webConfig.programId;
+const apiBase = webConfig.apiBase;
 const encode = (bytes: Uint8Array) => btoa(String.fromCharCode(...bytes));
 
 /** Signs only backend-prepared, single-instruction SeatBack Devnet intents. */

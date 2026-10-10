@@ -1,10 +1,11 @@
 import type { DisputeView, EventCapabilities, EventView, Page, RegistrationView, TxIntent, WaitlistView } from "@seatback/contracts";
+import { webConfig } from "./config";
 export {lamportsToSol,solToLamports} from "./money";
 
 const viteEnv=import.meta.env as ImportMetaEnv|undefined;
 // Fixture mode must be opted into explicitly; normal builds always call the backend.
 export const DEMO_MODE = viteEnv?.VITE_DEMO_MODE === "true";
-export const API_BASE = (viteEnv?.VITE_API_BASE ?? "http://localhost:3001").replace(/\/$/, "");
+export const API_BASE = webConfig.apiBase;
 export class ApiFailure extends Error {
   constructor(message: string, readonly status: number, readonly code = "API_ERROR") { super(message); this.name = "ApiFailure"; }
 }

@@ -20,6 +20,9 @@ writes. Backend errors, including 501/503, are shown as errors and never replace
 
 Set `VITE_API_BASE` (defaults to `http://localhost:3001`) and `VITE_PROGRAM_ID` in a local web
 environment. The program ID must match the compiler-generated IDL and the API's `SEATBACK_PROGRAM_ID`.
+`VITE_SEATBACK_PROGRAM_ID` and `VITE_API_BASE_URL` are compatibility aliases; conflicting values
+are rejected. An explicitly empty API base uses the browser origin (Docker/Nginx). API requests
+and transaction submission share the same configuration. See `docs/docker.md` for Compose setup.
 The client accepts only Devnet intents, checks the expected signer and immutable message, signs
 through Phantom, submits to the API and polls for finalized receipts. A pending receipt is never
 shown as success. Phantom account changes clear the browser session. Never use Mainnet or real funds.

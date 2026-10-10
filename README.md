@@ -6,7 +6,8 @@ Existing repository: https://github.com/0xalpar/seatback
 Backend MVP implements Anchor escrow, cancellation/attendance refunds, disputes, settlement,
 capacity/seat offers, authenticated Node API, PostgreSQL persistence, QR co-signing and workers.
 No Devnet deployment or audit is claimed. Never use real funds or deploy to Mainnet.
-Developer 2 independently owns the frontend. See docs/backend-integration.md before starting services.
+The release/mvp branch consolidates the integrated frontend/backend and Docker infrastructure.
+See docs/release-integration.md and docs/backend-integration.md before starting services.
 
 ## Quick start
 Prerequisites: Node 24.19.0 and pnpm 11.25.0. Use separate clones on the two computers.
@@ -25,6 +26,11 @@ Copy apps/web/.env.example to apps/web/.env.local if needed.
 Copy root .env.example to .env and supply the development-only backend values. API/worker scripts
 load this file deliberately. Run pnpm db:migrate first; run pnpm dev:worker in a third terminal.
 Service startup fails closed without PostgreSQL, a gate keypair, matching IDL and verified Devnet RPC.
+
+## Docker local environment
+See [docs/docker.md](docs/docker.md) for Docker Compose setup, external secret files, Devnet
+configuration, migrations and frontend integration requirements. After first-time configuration,
+run `docker compose up --build`. The Solana program remains deployed separately on Devnet.
 
 ## Workspace
 - apps/web: React + TypeScript + Vite; Developer 2 (Codex) owns frontend; untouched by backend.

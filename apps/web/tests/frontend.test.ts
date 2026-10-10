@@ -4,6 +4,19 @@ import {cancellationSplit,disputeDeadline,validatePolicy,type Policy} from "@sea
 import {createApi,ApiFailure,DEMO_MODE,isOfferExpired,requiresSession} from "../src/api.ts";
 import {lamportsToSol,solToLamports} from "../src/money.ts";
 import {signAndSubmit,waitForReceipt} from "../src/transactions.ts";
+import {resolveWebConfig} from "../src/config.ts";
+
+test("frontend config supports canonical and legacy names and preserves same-origin API base",()=>{
+  assert.deepEqual(resolveWebConfig({}),{programId:undefined,apiBase:"http://localhost:3001"});
+  assert.deepEqual(resolveWebConfig({VITE_PROGRAM_ID:"program",VITE_SEATBACK_PROGRAM_ID:"program",VITE_API_BASE:"",VITE_API_BASE_URL:""}),{programId:"program",apiBase:""});
+  assert.deepEqual(resolveWebConfig({VITE_SEATBACK_PROGRAM_ID:"legacy",VITE_API_BASE_URL:"https://seatback.example/"}),{programId:"legacy",apiBase:"https://seatback.example"});
+  assert.deepEqual(resolveWebConfig({VITE_PROGRAM_ID:"primary",VITE_API_BASE:"https://seatback.example"}),{programId:"primary",apiBase:"https://seatback.example"});
+});
+
+test("frontend config rejects conflicting program and API aliases",()=>{
+  assert.throws(()=>resolveWebConfig({VITE_PROGRAM_ID:"one",VITE_SEATBACK_PROGRAM_ID:"two"}),/Conflicting SeatBack program IDs/);
+  assert.throws(()=>resolveWebConfig({VITE_API_BASE:"",VITE_API_BASE_URL:"http://localhost:3001"}),/Conflicting API base URLs/);
+});
 
 test("SOL text converts to integer lamports without float rounding",()=>{
   assert.equal(solToLamports("1.000000001"),"1000000001");

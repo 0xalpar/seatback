@@ -14,18 +14,19 @@ if command -v google-chrome >/dev/null 2>&1; then
   google-chrome --headless --no-sandbox --disable-gpu --disable-dev-shm-usage \
     --virtual-time-budget=5000 --dump-dom http://localhost:5173/events \
     > "$DOCKER_FIXTURE_DIR/browser.html" 2> "$DOCKER_FIXTURE_DIR/browser.log"
-  if ! grep -q 'Plans worth' "$DOCKER_FIXTURE_DIR/browser.html"; then
+  if ! grep -q 'Nothing on the calendar just yet' "$DOCKER_FIXTURE_DIR/browser.html"; then
     cat "$DOCKER_FIXTURE_DIR/browser.log"
     head -c 12000 "$DOCKER_FIXTURE_DIR/browser.html"
     exit 1
   fi
-  echo 'Integrated React application rendered in headless Chrome.'
+  echo 'Integrated React application fetched the real empty events API in headless Chrome.'
 else
   echo 'Headless Chrome unavailable; HTTP serving checks only.'
 fi
 "${compose[@]}" exec -T api node infra/docker/healthcheck.mjs api
 "${compose[@]}" exec -T worker node infra/docker/healthcheck.mjs worker
 test "$("${compose[@]}" exec -T db psql -U seatback -d seatback -Atc 'SELECT count(*) FROM seatback_migrations')" = 2
+"${compose[@]}" exec -T db psql -U seatback -d seatback < infra/docker/test/schema.sql
 "${compose[@]}" run --rm migrate
 test "$("${compose[@]}" exec -T db psql -U seatback -d seatback -Atc 'SELECT count(*) FROM seatback_migrations')" = 2
 "${compose[@]}" exec -T api node --input-type=module -e 'import {access,writeFile} from "node:fs/promises";await access("/run/secrets/gate-keypair");try{await writeFile("/run/secrets/gate-keypair","changed");process.exit(1)}catch(e){if(!["EROFS","EACCES"].includes(e.code))throw e}'
@@ -36,4 +37,14 @@ test -z "$("${compose[@]}" port db 5432 2>/dev/null || true)"
 "${compose[@]}" restart api
 "${compose[@]}" up -d --wait --wait-timeout 180
 curl --fail --silent http://localhost:5173/v1/events | grep -q '"items":\[\]'
+# Recreate every container, retaining the named volume. A fresh database would have different
+# ledger timestamps even if its migrations were automatically reapplied.
+ledger_before="$("${compose[@]}" exec -T db psql -U seatback -d seatback -Atc 'SELECT name,sha256,applied_at FROM seatback_migrations ORDER BY name')"
+"${compose[@]}" down
+"${compose[@]}" up -d --wait --wait-timeout 180
+ledger_after="$("${compose[@]}" exec -T db psql -U seatback -d seatback -Atc 'SELECT name,sha256,applied_at FROM seatback_migrations ORDER BY name')"
+test "$ledger_before" = "$ledger_after"
+"${compose[@]}" exec -T worker node infra/docker/healthcheck.mjs worker
+curl --fail --silent http://localhost:5173/v1/events | grep -q '"items":\[\]'
+echo 'PostgreSQL data persisted across complete container recreation; API and worker recovered.'
 echo 'Docker smoke checks passed with a synthetic genesis-only RPC; no on-chain deployment tested.'

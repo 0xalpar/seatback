@@ -8,6 +8,9 @@ The Anchor program is deployed separately to **Solana Devnet**. Compose contains
 
 ## First-time setup
 
+Windows users: follow the exact PowerShell steps and current runtime blockers in
+[Windows runtime setup](windows-runtime.md).
+
 Install Docker Desktop with Linux containers (WSL2 on Windows), or Docker Engine with Compose
 v2.24+ and BuildKit. No host Node, pnpm, Rust or PostgreSQL is needed to build/run the containers.
 Deploy/synchronize the actual Devnet program separately using docs/backend-integration.md.

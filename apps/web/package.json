@@ -4,13 +4,14 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --host 127.0.0.1",
+    "dev": "vite --host localhost",
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test tests/*.test.ts"
   },
   "dependencies": {
     "@seatback/contracts": "workspace:*",
+    "@solana/web3.js": "1.98.4",
     "qrcode": "1.5.4",
     "react": "19.1.1",
     "react-dom": "19.1.1"

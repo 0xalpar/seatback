@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {cancellationSplit,disputeDeadline,validatePolicy,type Policy} from "@seatback/contracts";
 import {createApi,ApiFailure,DEMO_MODE,isOfferExpired,requiresSession} from "../src/api.ts";
 import {lamportsToSol,solToLamports} from "../src/money.ts";
+import {signAndSubmit,waitForReceipt} from "../src/transactions.ts";
 
 test("SOL text converts to integer lamports without float rounding",()=>{
   assert.equal(solToLamports("1.000000001"),"1000000001");
@@ -22,9 +23,9 @@ test("policy preview arithmetic honors the exact deadline boundaries",()=>{
   assert.throws(()=>validatePolicy(policy),/INVALID_DEADLINE_ORDER/);
 });
 
-test("demo transport is visibly read-only and never fabricates transaction success",async()=>{
-  assert.equal(DEMO_MODE,true);
-  const api=createApi();
+test("opt-in fixture transport is read-only and never fabricates transaction success",async()=>{
+  assert.equal(DEMO_MODE,false);
+  const api=createApi(true);
   const results=await api.events("design");
   assert.equal(results.items.length,1);
   const event=await api.event(results.items[0]!.id);
@@ -33,8 +34,8 @@ test("demo transport is visibly read-only and never fabricates transaction succe
   await assert.rejects(api.request("/v1/events",{method:"POST",body:JSON.stringify({title:"No demo writes"})}),e=>e instanceof ApiFailure&&e.status===501);
 });
 
-test("demo waitlist offer exposes server expiry and QR flow does not confirm attendance",async()=>{
-  const api=createApi();
+test("opt-in fixture waitlist shows expiry and QR never confirms attendance",async()=>{
+  const api=createApi(true);
   const queue=await api.waitlist();
   assert.equal(queue.items[0]?.status,"offered");
   assert.ok((queue.items[0]?.offerExpiresAt??0)>Math.floor(Date.now()/1000));
@@ -48,4 +49,32 @@ test("route access checks protect wallet areas and offer expiry uses the server 
   assert.equal(isOfferExpired(99,100),true);
   assert.equal(isOfferExpired(101,100),false);
   assert.equal(isOfferExpired(null,100),true);
+});
+
+test("default transport calls the configured API and preserves backend failures",async()=>{
+  const priorFetch=globalThis.fetch;
+  const priorStorage=(globalThis as any).sessionStorage;
+  let seen:RequestInit|undefined;
+  (globalThis as any).sessionStorage={getItem:(key:string)=>key==="seatback.csrf"?"csrf-value":null,removeItem:()=>{}};
+  globalThis.fetch=async(_input,init)=>{seen=init;return new Response(JSON.stringify({error:{code:"SERVICE_UNAVAILABLE",message:"SERVICE_UNAVAILABLE"}}),{status:503,headers:{"Content-Type":"application/json"}})};
+  try {
+    await assert.rejects(createApi().events("live"),e=>e instanceof ApiFailure&&e.status===503&&e.code==="SERVICE_UNAVAILABLE");
+    assert.equal(seen?.credentials,"include");
+    assert.equal(new Headers(seen?.headers).get("Accept"),"application/json");
+  } finally { globalThis.fetch=priorFetch; (globalThis as any).sessionStorage=priorStorage; }
+});
+
+test("transaction client rejects non-Devnet and expired intents before Phantom signing",async()=>{
+  let signed=false;
+  const signer={walletAddress:"11111111111111111111111111111111",signTransaction:async(tx:any)=>{signed=true;return tx}};
+  await assert.rejects(signAndSubmit({intentId:"i",cluster:"mainnet-beta" as any,transactionBase64:"",expiresAt:9999999999,lastValidBlockHeight:1,expectedSigner:signer.walletAddress},signer),/not for Devnet/);
+  await assert.rejects(signAndSubmit({intentId:"i",cluster:"devnet",transactionBase64:"",expiresAt:1,lastValidBlockHeight:1,expectedSigner:signer.walletAddress},signer),/expired/);
+  assert.equal(signed,false);
+});
+
+test("a pending receipt is never converted to confirmation",async()=>{
+  const pending={intentId:"i",signature:null,status:"pending" as const};
+  let calls=0;
+  await assert.rejects(waitForReceipt({intentId:"i",cluster:"devnet",transactionBase64:"",expiresAt:Math.floor(Date.now()/1000)+1,lastValidBlockHeight:1,expectedSigner:"wallet"},pending,async()=>{calls++;return pending}),/still pending or expired/);
+  assert.equal(calls,1);
 });

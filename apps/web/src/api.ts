@@ -2,7 +2,8 @@ import type { DisputeView, EventCapabilities, EventView, Page, RegistrationView,
 export {lamportsToSol,solToLamports} from "./money";
 
 const viteEnv=import.meta.env as ImportMetaEnv|undefined;
-export const DEMO_MODE = viteEnv?.VITE_DEMO_MODE !== "false";
+// Fixture mode must be opted into explicitly; normal builds always call the backend.
+export const DEMO_MODE = viteEnv?.VITE_DEMO_MODE === "true";
 export const API_BASE = (viteEnv?.VITE_API_BASE ?? "http://localhost:3001").replace(/\/$/, "");
 export class ApiFailure extends Error {
   constructor(message: string, readonly status: number, readonly code = "API_ERROR") { super(message); this.name = "ApiFailure"; }
@@ -34,9 +35,9 @@ const DEMO_DISPUTES: DisputeView[] = [{id:"dispute-demo-1",registrationId:"reg-d
 const page = <T,>(items:T[]): Page<T> => ({items,nextCursor:null});
 const queryOf = (path:string) => new URL(path,"http://demo.local").searchParams.get("q")?.toLowerCase() ?? "";
 
-export function createApi(): SeatBackApi {
+export function createApi(demo = DEMO_MODE): SeatBackApi {
   async function request<T>(path:string, init:RequestInit={}):Promise<T> {
-    if (DEMO_MODE) {
+    if (demo) {
       await new Promise(r=>setTimeout(r,120));
       const method=(init.method??"GET").toUpperCase();
       if(method==="GET"&&(path.startsWith("/v1/events?") || path==="/v1/events")) return page(DEMO_EVENTS.filter(e=>e.visibility==="public" && `${e.title} ${e.location} ${e.description}`.toLowerCase().includes(queryOf(path)))) as T;
@@ -57,7 +58,7 @@ export function createApi(): SeatBackApi {
     const method=(init.method??"GET").toUpperCase();
     const headers=new Headers(init.headers); headers.set("Accept","application/json");
     if(init.body && !headers.has("Content-Type")) headers.set("Content-Type","application/json");
-    if(method!=="GET"&&method!=="HEAD") { headers.set("X-CSRF-Token",sessionStorage.getItem("seatback.csrf")??""); headers.set("Idempotency-Key",crypto.randomUUID()); }
+    if(method!=="GET"&&method!=="HEAD") { headers.set("X-CSRF-Token",sessionStorage.getItem("seatback.csrf")??""); if(!headers.has("Idempotency-Key"))headers.set("Idempotency-Key",crypto.randomUUID()); }
     const res=await fetch(`${API_BASE}${path}`,{...init,headers,credentials:"include"});
     if(res.status===204)return undefined as T;
     const data=await res.json().catch(()=>null);

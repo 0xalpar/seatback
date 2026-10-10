@@ -1,7 +1,7 @@
-# Anchor specification v1 (not implemented)
-Scaffold uses Anchor 0.32.1. Only version() exists. No escrow can be initialized yet.
-State layouts in programs/seatback/src/state.rs are proposed, not a generated IDL.
-Program address is intentionally an unusable placeholder; replace before build/deploy.
+# Anchor implementation v1
+Anchor 0.32.1 implements the instructions below. State layouts are in programs/seatback/src/state.rs.
+The development public key supports compilation/tests; no deployment is claimed.
+Generate a dedicated program key and regenerate compiler IDL before Devnet deployment.
 
 ## PDA/account definitions
 Seeds use literal UTF-8 prefixes, 16-byte UUID bytes (not UUID text), 32-byte pubkeys and canonical bumps.
@@ -24,7 +24,7 @@ Rent reclaim is deferred v1; no unreviewed close instruction.
 Policy hash = SHA-256("seatback:policy:v1" UTF-8 || Borsh Policy in Rust field order).
 u64 deposit and i64 times little-endian; u32 dispute seconds little-endian; no JSON hashing.
 Metadata hash = SHA-256 UTF-8 canonical serialized metadata using RFC 8785; do not include access code.
-Implement cross-language test vectors before integration. These hashes are not implemented yet.
+Hashes are implemented in Rust/chain-client and API security helpers.
 
 ## Instruction contracts
 All transfers target recorded participant/organizer; caller cannot choose payout destination.
@@ -36,7 +36,7 @@ All create operations include rent payer signer. All args/accounts remain subjec
 | --- | --- | --- |
 | create_event(event_uuid, policy, capacity, registration_limit, metadata_hash, gate_authority, dispute_authority) | organizer payer, SystemProgram | init Event open; positive deposit/capacity; cap >= capacity; rule ordering; now < rule1; distinct independent arbiter |
 | update_event_metadata(metadata_hash) | organizer | only before first registration; no authority/policy mutation in v1 |
-| authorize_scanner(scanner_wallet) / revoke_scanner() | organizer, Scanner PDA, payer+SystemProgram for init | organizer or active scanner may scan; revocation immediate on-chain |
+| set_scanner(wallet, active) | organizer, Scanner PDA, payer+SystemProgram for init | organizer or active scanner may scan; revocation immediate on-chain; arbiter cannot scan |
 | register(admission_nonce_hash) | participant payer, Reservation/Vault init, gate signer, SystemProgram | event open, before check-in opens, no lifetime reservation, free capacity and cap; gate signer confirms private access (also required for public in v1); exact deposit CPI; snapshot; lock terms; increment lifetime/occupied/outstanding |
 | cancel_reservation() | participant, Reservation, Vault, participant payout account | reserved, now < closes, event not cancelled; use snapshot deadlines, transfer refund, record organizer entitlement, decrement occupied exactly once |
 | create_seat_offer(offer_uuid, participant, expires_at) | gate signer payer, SeatOffer init, SystemProgram | open, before opens, now < expiry <= min(now+3600, opens); available capacity/lifetime cap; increment held |
@@ -64,11 +64,11 @@ withdraw subtracts allocation/outstanding. Event counts may be lazily cleared fo
 but never reused for admission to cancelled event. Duplicate/mismatched accounts fail before lamport mutation.
 No cross-instruction bypass: every transfer path independently checks event state, liability and authority.
 
-## Required events/errors
-Emit EventCreated, ReservationCreated, ReservationCancelled, SeatOffered, OfferExpired, OfferAccepted,
-AttendanceVerified, NoShowMarked, DisputeOpened, DisputeResolved, EventCancelled, RefundClaimed, AllocationWithdrawn.
-Each includes event/reservation keys where relevant, amount, timestamp and state.
-Errors: InvalidPolicy, InvalidAuthority, InvalidPda, EventClosed, TermsLocked, CapacityExceeded,
-RegistrationLimitReached, AlreadyRegistered, OfferExpired, OfferWalletMismatch, InvalidState,
-CheckInWindowClosed, Replay, DisputeWindowClosed, UnresolvedDisputes, AlreadyPaid, Overflow.
+## Events/errors
+Compiler IDL defines SeatBackEvent with event/account, participant_amount, organizer_amount and timestamp.
+kind: 0 create, 1 metadata, 2 scanner, 3 registration (including offer acceptance), 4 offer creation,
+5 offer expiry, 6 participant cancellation, 7 attendance, 8 no-show, 9 dispute open, 10 resolution,
+11 event cancellation, 12 refund claim, 13 no-show settlement, 14 withdrawal, 15 finalization.
+Canonical errors are in programs/seatback/src/errors.rs. Fixed arbiter cannot register as participant.
+Offer acceptance also requires gate signature, supplied by API after admission checks.
 UncheckedAccount requires a written safety invariant; no client-supplied clock, refund amount or policy.

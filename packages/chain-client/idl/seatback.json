@@ -1,0 +1,1947 @@
+{
+  "address": "Fg6PaFpoGXkYsidMpWxTWqkZqA1QJRF9q8RJkZ8fCkU",
+  "metadata": {
+    "name": "seatback",
+    "version": "0.1.0",
+    "spec": "0.1.0"
+  },
+  "instructions": [
+    {
+      "name": "accept_seat_offer",
+      "discriminator": [
+        166,
+        240,
+        209,
+        80,
+        234,
+        115,
+        113,
+        109
+      ],
+      "accounts": [
+        {
+          "name": "event",
+          "writable": true
+        },
+        {
+          "name": "reservation",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  115,
+                  101,
+                  114,
+                  118,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "event"
+              },
+              {
+                "kind": "account",
+                "path": "participant"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "reservation"
+              }
+            ]
+          }
+        },
+        {
+          "name": "participant",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "gate",
+          "signer": true
+        },
+        {
+          "name": "offer",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "cancel_event",
+      "discriminator": [
+        55,
+        143,
+        36,
+        45,
+        59,
+        241,
+        89,
+        119
+      ],
+      "accounts": [
+        {
+          "name": "event",
+          "writable": true
+        },
+        {
+          "name": "organizer",
+          "signer": true,
+          "relations": [
+            "event"
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "cancel_reservation",
+      "discriminator": [
+        72,
+        162,
+        75,
+        180,
+        116,
+        157,
+        146,
+        172
+      ],
+      "accounts": [
+        {
+          "name": "event",
+          "writable": true,
+          "relations": [
+            "reservation",
+            "vault"
+          ]
+        },
+        {
+          "name": "reservation",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  115,
+                  101,
+                  114,
+                  118,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "event"
+              },
+              {
+                "kind": "account",
+                "path": "reservation.participant",
+                "account": "Reservation"
+              }
+            ]
+          },
+          "relations": [
+            "vault"
+          ]
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "reservation"
+              }
+            ]
+          }
+        },
+        {
+          "name": "participant",
+          "writable": true
+        },
+        {
+          "name": "organizer",
+          "writable": true
+        },
+        {
+          "name": "actor",
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "claim_cancelled_event_refund",
+      "discriminator": [
+        135,
+        219,
+        11,
+        84,
+        221,
+        212,
+        229,
+        65
+      ],
+      "accounts": [
+        {
+          "name": "event",
+          "writable": true,
+          "relations": [
+            "reservation",
+            "vault"
+          ]
+        },
+        {
+          "name": "reservation",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  115,
+                  101,
+                  114,
+                  118,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "event"
+              },
+              {
+                "kind": "account",
+                "path": "reservation.participant",
+                "account": "Reservation"
+              }
+            ]
+          },
+          "relations": [
+            "vault"
+          ]
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "reservation"
+              }
+            ]
+          }
+        },
+        {
+          "name": "participant",
+          "writable": true
+        },
+        {
+          "name": "organizer",
+          "writable": true
+        },
+        {
+          "name": "actor",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "dispute",
+          "writable": true,
+          "optional": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "create_event",
+      "discriminator": [
+        49,
+        219,
+        29,
+        203,
+        22,
+        98,
+        100,
+        87
+      ],
+      "accounts": [
+        {
+          "name": "event",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  118,
+                  101,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "organizer"
+              },
+              {
+                "kind": "arg",
+                "path": "event_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "organizer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "event_id",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          }
+        },
+        {
+          "name": "policy",
+          "type": {
+            "defined": {
+              "name": "Policy"
+            }
+          }
+        },
+        {
+          "name": "capacity",
+          "type": "u32"
+        },
+        {
+          "name": "registration_limit",
+          "type": "u32"
+        },
+        {
+          "name": "metadata_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "gate_authority",
+          "type": "pubkey"
+        },
+        {
+          "name": "dispute_authority",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "create_seat_offer",
+      "discriminator": [
+        242,
+        158,
+        196,
+        174,
+        205,
+        171,
+        15,
+        218
+      ],
+      "accounts": [
+        {
+          "name": "event",
+          "writable": true
+        },
+        {
+          "name": "offer",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  102,
+                  102,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "event"
+              },
+              {
+                "kind": "arg",
+                "path": "offer_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "gate",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "offer_id",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          }
+        },
+        {
+          "name": "participant",
+          "type": "pubkey"
+        },
+        {
+          "name": "expires_at",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "expire_seat_offer",
+      "discriminator": [
+        214,
+        248,
+        234,
+        242,
+        82,
+        251,
+        10,
+        29
+      ],
+      "accounts": [
+        {
+          "name": "event",
+          "writable": true,
+          "relations": [
+            "offer"
+          ]
+        },
+        {
+          "name": "offer",
+          "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "finalize_event",
+      "discriminator": [
+        88,
+        246,
+        123,
+        105,
+        100,
+        148,
+        170,
+        236
+      ],
+      "accounts": [
+        {
+          "name": "event",
+          "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "mark_no_show",
+      "discriminator": [
+        134,
+        214,
+        246,
+        140,
+        19,
+        219,
+        144,
+        115
+      ],
+      "accounts": [
+        {
+          "name": "event",
+          "writable": true,
+          "relations": [
+            "reservation",
+            "vault"
+          ]
+        },
+        {
+          "name": "reservation",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  115,
+                  101,
+                  114,
+                  118,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "event"
+              },
+              {
+                "kind": "account",
+                "path": "reservation.participant",
+                "account": "Reservation"
+              }
+            ]
+          },
+          "relations": [
+            "vault"
+          ]
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "reservation"
+              }
+            ]
+          }
+        },
+        {
+          "name": "participant",
+          "writable": true
+        },
+        {
+          "name": "organizer",
+          "writable": true
+        },
+        {
+          "name": "actor",
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "open_dispute",
+      "discriminator": [
+        137,
+        25,
+        99,
+        119,
+        23,
+        223,
+        161,
+        42
+      ],
+      "accounts": [
+        {
+          "name": "event",
+          "writable": true,
+          "relations": [
+            "reservation",
+            "vault"
+          ]
+        },
+        {
+          "name": "reservation",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  115,
+                  101,
+                  114,
+                  118,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "event"
+              },
+              {
+                "kind": "account",
+                "path": "reservation.participant",
+                "account": "Reservation"
+              }
+            ]
+          },
+          "relations": [
+            "vault"
+          ]
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "reservation"
+              }
+            ]
+          }
+        },
+        {
+          "name": "participant",
+          "writable": true
+        },
+        {
+          "name": "organizer",
+          "writable": true
+        },
+        {
+          "name": "actor",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "dispute",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  105,
+                  115,
+                  112,
+                  117,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "reservation"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "evidence_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "register",
+      "discriminator": [
+        211,
+        124,
+        67,
+        15,
+        211,
+        194,
+        178,
+        240
+      ],
+      "accounts": [
+        {
+          "name": "event",
+          "writable": true
+        },
+        {
+          "name": "reservation",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  115,
+                  101,
+                  114,
+                  118,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "event"
+              },
+              {
+                "kind": "account",
+                "path": "participant"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "reservation"
+              }
+            ]
+          }
+        },
+        {
+          "name": "participant",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "gate",
+          "signer": true
+        },
+        {
+          "name": "offer",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "admission_nonce_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "resolve_dispute",
+      "discriminator": [
+        231,
+        6,
+        202,
+        6,
+        96,
+        103,
+        12,
+        230
+      ],
+      "accounts": [
+        {
+          "name": "event",
+          "writable": true,
+          "relations": [
+            "reservation",
+            "vault",
+            "dispute"
+          ]
+        },
+        {
+          "name": "reservation",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  115,
+                  101,
+                  114,
+                  118,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "event"
+              },
+              {
+                "kind": "account",
+                "path": "reservation.participant",
+                "account": "Reservation"
+              }
+            ]
+          },
+          "relations": [
+            "vault",
+            "dispute"
+          ]
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "reservation"
+              }
+            ]
+          }
+        },
+        {
+          "name": "participant",
+          "writable": true
+        },
+        {
+          "name": "organizer",
+          "writable": true
+        },
+        {
+          "name": "actor",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "dispute",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  105,
+                  115,
+                  112,
+                  117,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "reservation"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "outcome",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "set_scanner",
+      "discriminator": [
+        141,
+        51,
+        158,
+        241,
+        72,
+        245,
+        223,
+        204
+      ],
+      "accounts": [
+        {
+          "name": "event"
+        },
+        {
+          "name": "scanner",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  99,
+                  97,
+                  110,
+                  110,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "event"
+              },
+              {
+                "kind": "arg",
+                "path": "wallet"
+              }
+            ]
+          }
+        },
+        {
+          "name": "organizer",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "event"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "wallet",
+          "type": "pubkey"
+        },
+        {
+          "name": "active",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "settle_no_show",
+      "discriminator": [
+        163,
+        194,
+        220,
+        140,
+        229,
+        67,
+        131,
+        234
+      ],
+      "accounts": [
+        {
+          "name": "event",
+          "writable": true,
+          "relations": [
+            "reservation",
+            "vault"
+          ]
+        },
+        {
+          "name": "reservation",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  115,
+                  101,
+                  114,
+                  118,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "event"
+              },
+              {
+                "kind": "account",
+                "path": "reservation.participant",
+                "account": "Reservation"
+              }
+            ]
+          },
+          "relations": [
+            "vault"
+          ]
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "reservation"
+              }
+            ]
+          }
+        },
+        {
+          "name": "participant",
+          "writable": true
+        },
+        {
+          "name": "organizer",
+          "writable": true
+        },
+        {
+          "name": "actor",
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "update_event_metadata",
+      "discriminator": [
+        125,
+        175,
+        192,
+        7,
+        154,
+        4,
+        214,
+        52
+      ],
+      "accounts": [
+        {
+          "name": "event",
+          "writable": true
+        },
+        {
+          "name": "organizer",
+          "signer": true,
+          "relations": [
+            "event"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "metadata_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "verify_attendance",
+      "discriminator": [
+        210,
+        147,
+        173,
+        144,
+        13,
+        150,
+        214,
+        2
+      ],
+      "accounts": [
+        {
+          "name": "event",
+          "writable": true,
+          "relations": [
+            "reservation",
+            "vault"
+          ]
+        },
+        {
+          "name": "reservation",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  115,
+                  101,
+                  114,
+                  118,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "event"
+              },
+              {
+                "kind": "account",
+                "path": "reservation.participant",
+                "account": "Reservation"
+              }
+            ]
+          },
+          "relations": [
+            "vault"
+          ]
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "reservation"
+              }
+            ]
+          }
+        },
+        {
+          "name": "participant",
+          "writable": true
+        },
+        {
+          "name": "organizer",
+          "writable": true
+        },
+        {
+          "name": "actor",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "participant_signer",
+          "signer": true
+        },
+        {
+          "name": "scanner_authorization",
+          "optional": true
+        }
+      ],
+      "args": [
+        {
+          "name": "qr_nonce_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "withdraw_allocation",
+      "discriminator": [
+        31,
+        250,
+        91,
+        150,
+        37,
+        52,
+        116,
+        154
+      ],
+      "accounts": [
+        {
+          "name": "event",
+          "writable": true,
+          "relations": [
+            "reservation",
+            "vault"
+          ]
+        },
+        {
+          "name": "reservation",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  115,
+                  101,
+                  114,
+                  118,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "event"
+              },
+              {
+                "kind": "account",
+                "path": "reservation.participant",
+                "account": "Reservation"
+              }
+            ]
+          },
+          "relations": [
+            "vault"
+          ]
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "reservation"
+              }
+            ]
+          }
+        },
+        {
+          "name": "participant",
+          "writable": true
+        },
+        {
+          "name": "organizer",
+          "writable": true
+        },
+        {
+          "name": "actor",
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Dispute",
+      "discriminator": [
+        36,
+        49,
+        241,
+        67,
+        40,
+        36,
+        241,
+        74
+      ]
+    },
+    {
+      "name": "Event",
+      "discriminator": [
+        125,
+        192,
+        125,
+        158,
+        9,
+        115,
+        152,
+        233
+      ]
+    },
+    {
+      "name": "Reservation",
+      "discriminator": [
+        188,
+        235,
+        0,
+        111,
+        208,
+        253,
+        247,
+        212
+      ]
+    },
+    {
+      "name": "Scanner",
+      "discriminator": [
+        108,
+        248,
+        55,
+        60,
+        153,
+        193,
+        181,
+        77
+      ]
+    },
+    {
+      "name": "SeatOffer",
+      "discriminator": [
+        129,
+        249,
+        41,
+        149,
+        138,
+        184,
+        90,
+        250
+      ]
+    },
+    {
+      "name": "Vault",
+      "discriminator": [
+        211,
+        8,
+        232,
+        43,
+        2,
+        152,
+        117,
+        119
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "SeatBackEvent",
+      "discriminator": [
+        142,
+        18,
+        113,
+        183,
+        76,
+        221,
+        65,
+        12
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidPolicy",
+      "msg": "Invalid or unordered policy"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidAuthority",
+      "msg": "Unauthorized signer"
+    },
+    {
+      "code": 6002,
+      "name": "EventClosed",
+      "msg": "Event is not open"
+    },
+    {
+      "code": 6003,
+      "name": "TermsLocked",
+      "msg": "Registered terms are immutable"
+    },
+    {
+      "code": 6004,
+      "name": "CapacityExceeded",
+      "msg": "Seat capacity exceeded"
+    },
+    {
+      "code": 6005,
+      "name": "RegistrationLimitReached",
+      "msg": "Lifetime registration limit reached"
+    },
+    {
+      "code": 6006,
+      "name": "InvalidState",
+      "msg": "Invalid state or replay"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidOffer",
+      "msg": "Offer has expired or belongs to another wallet"
+    },
+    {
+      "code": 6008,
+      "name": "CheckInWindowClosed",
+      "msg": "Outside check-in window"
+    },
+    {
+      "code": 6009,
+      "name": "DisputeWindowClosed",
+      "msg": "Dispute window is closed"
+    },
+    {
+      "code": 6010,
+      "name": "UnresolvedDisputes",
+      "msg": "Unresolved disputes block settlement"
+    },
+    {
+      "code": 6011,
+      "name": "AlreadyPaid",
+      "msg": "No remaining payment"
+    },
+    {
+      "code": 6012,
+      "name": "Overflow",
+      "msg": "Checked arithmetic overflow"
+    },
+    {
+      "code": 6013,
+      "name": "InvalidAccount",
+      "msg": "Mismatched account or PDA"
+    },
+    {
+      "code": 6014,
+      "name": "InsufficientEscrow",
+      "msg": "Insufficient escrow or rent reserve"
+    }
+  ],
+  "types": [
+    {
+      "name": "Dispute",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "event",
+            "type": "pubkey"
+          },
+          {
+            "name": "reservation",
+            "type": "pubkey"
+          },
+          {
+            "name": "participant",
+            "type": "pubkey"
+          },
+          {
+            "name": "evidence_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "opened_at",
+            "type": "i64"
+          },
+          {
+            "name": "resolved_at",
+            "type": "i64"
+          },
+          {
+            "name": "outcome",
+            "type": "u8"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Event",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "version",
+            "type": "u8"
+          },
+          {
+            "name": "organizer",
+            "type": "pubkey"
+          },
+          {
+            "name": "event_id",
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          },
+          {
+            "name": "policy",
+            "type": {
+              "defined": {
+                "name": "Policy"
+              }
+            }
+          },
+          {
+            "name": "policy_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "metadata_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "gate_authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "dispute_authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "capacity",
+            "type": "u32"
+          },
+          {
+            "name": "registration_limit",
+            "type": "u32"
+          },
+          {
+            "name": "registrations_created",
+            "type": "u32"
+          },
+          {
+            "name": "occupied_seats",
+            "type": "u32"
+          },
+          {
+            "name": "held_offers",
+            "type": "u32"
+          },
+          {
+            "name": "outstanding_disputes",
+            "type": "u32"
+          },
+          {
+            "name": "outstanding_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "organizer_allocated_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "status",
+            "type": "u8"
+          },
+          {
+            "name": "terms_locked",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Policy",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "deposit_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "rule1_deadline",
+            "type": "i64"
+          },
+          {
+            "name": "rule2_deadline",
+            "type": "i64"
+          },
+          {
+            "name": "check_in_opens_at",
+            "type": "i64"
+          },
+          {
+            "name": "check_in_closes_at",
+            "type": "i64"
+          },
+          {
+            "name": "event_starts_at",
+            "type": "i64"
+          },
+          {
+            "name": "event_ends_at",
+            "type": "i64"
+          },
+          {
+            "name": "dispute_seconds",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Reservation",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "event",
+            "type": "pubkey"
+          },
+          {
+            "name": "participant",
+            "type": "pubkey"
+          },
+          {
+            "name": "policy_snapshot",
+            "type": {
+              "defined": {
+                "name": "Policy"
+              }
+            }
+          },
+          {
+            "name": "policy_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "type": "u8"
+          },
+          {
+            "name": "attended_at",
+            "type": "i64"
+          },
+          {
+            "name": "participant_paid_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "organizer_allocated_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "organizer_paid_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "qr_nonce_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "dispute_open",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Scanner",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "event",
+            "type": "pubkey"
+          },
+          {
+            "name": "wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "active",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SeatBackEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "event",
+            "type": "pubkey"
+          },
+          {
+            "name": "account",
+            "type": "pubkey"
+          },
+          {
+            "name": "kind",
+            "type": "u8"
+          },
+          {
+            "name": "participant_amount",
+            "type": "u64"
+          },
+          {
+            "name": "organizer_amount",
+            "type": "u64"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SeatOffer",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "event",
+            "type": "pubkey"
+          },
+          {
+            "name": "participant",
+            "type": "pubkey"
+          },
+          {
+            "name": "offer_id",
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          },
+          {
+            "name": "expires_at",
+            "type": "i64"
+          },
+          {
+            "name": "status",
+            "type": "u8"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Vault",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "event",
+            "type": "pubkey"
+          },
+          {
+            "name": "reservation",
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ]
+}

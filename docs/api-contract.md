@@ -1,5 +1,5 @@
-# HTTP API v1 — specification, not implemented
-Only GET /health exists today. Business routes return 501 in skeleton.
+# HTTP API v1
+Business routes are implemented on backend; startup requires PostgreSQL, signer, generated IDL and Devnet RPC.
 packages/contracts/src/index.ts is the wire type source; docs/openapi.json specifies routes and payloads.
 Base URL http://localhost:3001; all /v1 endpoints JSON except no-content responses.
 Decimal lamport strings (u64), Unix seconds integer UTC, UUID IDs, base58 wallet/PDA/signature strings.
@@ -31,7 +31,7 @@ GET /v1/auth/session also provides CSRF token to same-origin authenticated clien
 | GET /v1/me/registrations?cursor=&limit= | none | Page<RegistrationView> 200 | owner session |
 | GET /v1/me/waitlist?cursor=&limit= | none | Page<WaitlistView> 200 | session |
 | POST /v1/events/{eventId}/waitlist | {} | WaitlistView 201 | session + admission; no deposit |
-| DELETE /v1/events/{eventId}/waitlist | none | 204; release active offer via chain job | owner |
+| DELETE /v1/events/{eventId}/waitlist | none | 204; existing chain hold releases at expiry via worker | owner |
 | POST /v1/offers/{offerId}/accept | {} | TxIntent 201 | offered wallet |
 | GET /v1/organizer/events?cursor=&limit= | none | Page<EventView> 200 | organizer |
 | GET /v1/events/{eventId}/participants?cursor=&limit= | none | Page<RegistrationView> 200 | organizer/scanner (scanner reduced projection in future) |
@@ -68,4 +68,4 @@ Never accept arbitrary signed transactions for broadcast.
 ## Frontend mock boundary
 Implement a SeatBackApi interface in apps/web using exactly these DTOs and explicit fixture transport.
 Mock mode must have persistent visible banner and cannot submit transactions. Real 501 is displayed as
-unavailable, never replaced with fake success. No generated IDL exists in this phase.
+unavailable, never replaced with fake success. See docs/backend-integration.md for IDL and real backend setup.

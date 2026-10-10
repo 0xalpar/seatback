@@ -16,6 +16,9 @@ jobs:
       - run: cargo run -p seatback-idl-gen
         env:
           RUSTUP_TOOLCHAIN: 1.89.0
+          # Published IDL builder 0.1.2 forces procmacro2_semver_exempt. This
+          # compiler-only setting is scoped to IDL generation, never SBF builds.
+          RUSTC_BOOTSTRAP: 1
       - name: Generated IDL
         run: echo "IDL_BASE64=$(base64 -w0 packages/chain-client/idl/seatback.json)"
       - name: Install Agave build tools

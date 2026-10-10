@@ -210,6 +210,7 @@ fn available(e: &Event) -> Result<()> {
 }
 fn reserve(ctx: Context<Register>, offered: bool) -> Result<()> {
     let a=ctx.accounts; let now=Clock::get()?.unix_timestamp;
+    require!(a.participant.key()!=a.event.dispute_authority,E::InvalidAuthority);
     require!(a.event.status==OPEN && now<a.event.policy.check_in_opens_at,E::EventClosed);
     if offered {
         let o=a.offer.as_mut().ok_or(E::InvalidOffer)?;

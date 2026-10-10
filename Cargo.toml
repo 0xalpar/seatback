@@ -1,5 +1,5 @@
 [workspace]
-members = ["programs/seatback"]
+members = ["programs/seatback", "tools/idl-gen"]
 resolver = "2"
 
 [profile.release]

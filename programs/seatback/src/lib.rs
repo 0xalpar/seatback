@@ -196,7 +196,11 @@ pub mod seatback {
     }
 }
 fn policy_digest(p: &Policy) -> Result<[u8;32]> {
-    Ok(anchor_lang::solana_program::hash::hashv(&[b"seatback:policy:v1", &p.try_to_vec()?]).to_bytes())
+    use sha2::{Digest, Sha256};
+    let mut digest=Sha256::new();
+    digest.update(b"seatback:policy:v1");
+    digest.update(p.try_to_vec()?);
+    Ok(digest.finalize().into())
 }
 fn available(e: &Event) -> Result<()> {
     require!(e.occupied_seats.checked_add(e.held_offers).ok_or(E::Overflow)?<e.capacity,E::CapacityExceeded);

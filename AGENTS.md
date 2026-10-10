@@ -1,0 +1,15 @@
+# SeatBack contributor instructions
+- Work only in the existing 0xalpar/seatback repository. Devnet and local validator only.
+- This phase is a foundation; do not present stubs, mocks or reference math as implemented chain security.
+- Never commit .env files, wallet keypairs, seed phrases, service-role keys, private access codes or QR secrets.
+- Codex owns apps/api, apps/worker, programs, supabase, packages/chain-client and shared contracts.
+- Claude owns apps/web and frontend tests/docs. Coordinate shared contracts/root lockfile changes with backend.
+- Read docs/architecture.md, docs/onchain.md, docs/api-contract.md, docs/security.md and docs/testing.md first.
+- Preserve registered participant policy snapshots. Lock material event terms at first registration.
+- All money uses checked u64 lamports on-chain, bigint in JS, decimal strings in JSON.
+- API/DB must not override chain outcomes. Verify transaction content and confirmation before updating projections.
+- QR consumption must be authorized, scoped, expiring and replay-safe. Never store raw QR secrets.
+- RLS stays enabled. Private metadata and evidence are never public search results.
+- Main branch changes through review after bootstrap. Never force-push shared branches.
+- Run pnpm check:foundation and pnpm check before PR. Monetary changes also require Anchor adversarial tests.
+- Record unavailable tooling honestly; no fabricated passing checks, generated IDL or deployed addresses.

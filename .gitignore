@@ -147,3 +147,10 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# SeatBack: development keys and Rust/Anchor output
+target/
+.anchor/
+*.keypair.json
+*-keypair.json
+test-ledger/

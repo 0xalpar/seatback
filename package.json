@@ -1,0 +1,23 @@
+{
+  "name": "seatback",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=22.12.0 <25"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @seatback/web dev",
+    "dev:api": "pnpm --filter @seatback/api dev",
+    "build": "pnpm --filter @seatback/contracts build && pnpm --filter @seatback/api build && pnpm --filter @seatback/web build",
+    "typecheck": "pnpm --filter @seatback/contracts build && pnpm -r typecheck",
+    "test": "pnpm --filter @seatback/contracts build && pnpm --filter @seatback/api build && node --test tests/*.test.mjs",
+    "check": "pnpm typecheck && pnpm test && pnpm build",
+    "check:foundation": "node scripts/check-foundation.mjs"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "@types/node": "22.18.6",
+    "tsx": "4.20.6"
+  }
+}

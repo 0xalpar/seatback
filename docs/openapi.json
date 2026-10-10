@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "SeatBack API — planned v1",
+    "title": "SeatBack API v1",
     "version": "0.1.0",
-    "description": "Only /health is implemented. All /v1 paths currently return 501. See api-contract.md for authorization/state preconditions."
+    "description": "Backend v1 routes are implemented. Startup requires PostgreSQL, the dedicated Devnet gate, matching compiler IDL and verified Devnet RPC. See api-contract.md for authorization/state preconditions; implementation is not evidence of live deployment."
   },
   "servers": [
     {

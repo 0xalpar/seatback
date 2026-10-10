@@ -2,10 +2,11 @@
 
 ## Current status and authority
 
-The operator will generate and retain every deployment private key locally, obtain faucet-only
-SOL and authorize/sign transactions. No deployment key is generated in the Codex session or CI.
-There is currently **no actual program ID or deployment transaction established by this phase**.
-The checked-in development ID supports compilation/tests only. Do not fund that address.
+With explicit operator approval, dedicated Devnet keys and application secrets were generated on
+the operator's Windows computer at `C:/Users/Mustafa/.seatback/devnet`, outside Git, protected by
+owner/SYSTEM directory ACLs. Existing files are reused, never overwritten. No deployment key is
+generated or uploaded in CI. Program public ID: `5PZki4JDVr8Cd1DTCGCiRHNgXAnZBjAAJVc9HSrmCR97`.
+This is a prepared identity, **not a verified deployment**. Faucet funding/signing need operator approval.
 Anchor's default provider wallet now points to a dedicated SeatBack Devnet path, not a general wallet.
 Financial Rust logic is unchanged. Compilation, test success and a configured address are not deployment.
 
@@ -66,6 +67,18 @@ prefer a separate Linux checkout/dependency install. Git authentication inside W
 your own GitHub authorization; never put tokens into repository files.
 
 ## 2. Generate the local keys yourself
+
+**This computer already has approved local keys. Do not regenerate them.** After installing Solana
+CLI in WSL, copy/reuse the existing identities into its private Linux home directory:
+
+```bash
+export WINDOWS_SEATBACK_KEYS=/mnt/c/Users/Mustafa/.seatback/devnet
+bash scripts/import-local-devnet-keys.sh
+export SEATBACK_DEVNET_KEYS="$HOME/.config/seatback/devnet"
+```
+
+The following generation instructions apply only to a genuinely fresh machine with no prepared identity.
+Creating different keys would change the configured program; do not do that for this checkout.
 
 Run locally in WSL. These commands deliberately fail if a target key file already exists.
 `--silent` suppresses seed phrase display. Keypairs remain outside Git with restrictive Linux permissions.

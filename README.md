@@ -10,6 +10,7 @@ The release/mvp branch consolidates the integrated frontend/backend and Docker i
 See docs/release-integration.md and docs/backend-integration.md before starting services.
 For operator-owned local keys, pinned WSL tools and guarded Devnet deployment/verification,
 follow [docs/devnet-deployment.md](docs/devnet-deployment.md). No deployment credentials are stored in CI.
+Use [docs/demo-runbook.md](docs/demo-runbook.md) for startup checks and the live presentation sequence.
 
 ## Quick start
 Prerequisites: Node 24.19.0 and pnpm 11.25.0. Use separate clones on the two computers.

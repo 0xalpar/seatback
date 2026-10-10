@@ -1,5 +1,6 @@
 # Security boundaries
-This scaffold has no security audit and no working custody logic.
+Anchor escrow and custody rules are implemented and tested with the compiled SBF program.
+No security audit is claimed. Live deployment and end-to-end verification must be recorded separately.
 ## Authentication
 Use Sign-In With Solana style domain/origin-bound canonical message: wallet, domain, URI, devnet,
 nonce, issued-at and expiration (5 minutes). Persist hashed one-use nonce. Verify Ed25519 signature and

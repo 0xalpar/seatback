@@ -32,18 +32,28 @@ jobs:
           solana --version
           cargo build-sbf --version
           node scripts/check-program-id.mjs
-          bash -n scripts/prepare-devnet.sh scripts/deploy-devnet.sh
+          bash -n scripts/prepare-devnet.sh scripts/deploy-devnet.sh scripts/import-local-devnet-keys.sh
       - run: cargo build-sbf --manifest-path programs/seatback/Cargo.toml --tools-version v1.56 --arch v0 -- --locked
       - run: cargo test --locked -p seatback -p seatback-chain-tests -- --nocapture
         env:
           SBF_OUT_DIR: ${{ github.workspace }}/target/deploy
       - name: Check generated IDL and dependency lock are current
         run: git diff --exit-code -- Cargo.lock packages/chain-client/idl/seatback.json
+      - name: Record tested SBF artifact provenance (public data only)
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib
+          binary = pathlib.Path('target/deploy/seatback.so').read_bytes()
+          proof = {'sourceCommit': os.environ['GITHUB_SHA'], 'programId': json.loads(pathlib.Path('packages/chain-client/idl/seatback.json').read_text())['address'], 'bytes': len(binary), 'sha256': hashlib.sha256(binary).hexdigest(), 'agave': '2.3.13', 'platformTools': 'v1.56', 'arch': 'v0', 'status': 'compiled-and-tested-not-deployed'}
+          pathlib.Path('target/deploy/build-provenance.json').write_text(json.dumps(proof, indent=2)+'\n')
+          print(json.dumps(proof))
+          PY
       - uses: actions/upload-artifact@v4
         with:
           name: seatback-sbf-and-idl
           path: |
             target/deploy/seatback.so
+            target/deploy/build-provenance.json
             packages/chain-client/idl/seatback.json
             Cargo.lock
   backend:

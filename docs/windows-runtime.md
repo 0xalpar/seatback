@@ -2,9 +2,10 @@
 
 ## Runtime installation
 
-The inspected Windows agent has no Docker Desktop, Docker CLI, Podman, nerdctl or installed
-WSL distribution. Container execution is validated on GitHub Actions Linux runners instead.
-This is not evidence of successful local Windows execution.
+The original agent had no Docker/WSL runtime. On 2026-10-11 Docker Desktop was found installed,
+and Microsoft-signed WSL 3.0.1 plus VirtualMachinePlatform were installed/enabled locally.
+Ubuntu installation and Docker Linux-engine startup must complete (a Windows restart may be needed).
+Hosted CI validation is recorded separately and is not evidence of successful local container execution.
 
 In **Administrator PowerShell**, install WSL if it is absent:
 

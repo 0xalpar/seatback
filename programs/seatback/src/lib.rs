@@ -9,7 +9,7 @@ use logic::*;
 use errors::SeatBackError as E;
 // Stable development program public key. No private key is stored in this repository.
 // Deployment requires a locally generated program key and keys sync.
-declare_id!("Fg6PaFpoGXkYsidMpWxTWqkZqA1QJRF9q8RJkZ8fCkU");
+declare_id!("5PZki4JDVr8Cd1DTCGCiRHNgXAnZBjAAJVc9HSrmCR97");
 
 #[program]
 pub mod seatback {

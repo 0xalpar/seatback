@@ -1,3 +1,4 @@
+import {readFileSync} from "node:fs";
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile,readdir} from 'node:fs/promises';
@@ -13,7 +14,7 @@ import {Intents} from '../apps/api/dist/intents.js';
 import {sha,hashCode,verifyCode,canonical} from '../apps/api/dist/security.js';
 import {loadConfig} from '../apps/api/dist/config.js';
 import {Keypair,PublicKey,Transaction,serializePartial,mergeSignedTransactions,pda,policyArgs,ChainClient,loadIdl,policyDigest} from '../packages/chain-client/dist/index.js';
-const programId=new PublicKey('Fg6PaFpoGXkYsidMpWxTWqkZqA1QJRF9q8RJkZ8fCkU');
+const programId=new PublicKey(JSON.parse(readFileSync(new URL("../packages/chain-client/idl/seatback.json",import.meta.url),"utf8")).address);
 const config={webOrigin:'http://localhost:5173',authDomain:'localhost:5173',sessionSecret:'s'.repeat(40),codePepper:'p'.repeat(40),secureCookies:false,localValidator:true,disputeAuthority:Keypair.generate().publicKey.toBase58()};
 function walletSign(k,message){const key=createPrivateKey({key:Buffer.concat([Buffer.from('302e020100300506032b657004220420','hex'),Buffer.from(k.secretKey.slice(0,32))]),format:'der',type:'pkcs8'});return sign(null,Buffer.from(message),key).toString('base64');}
 async function database(){

@@ -5,6 +5,15 @@ import {createApi,ApiFailure,DEMO_MODE,isOfferExpired,requiresSession} from "../
 import {lamportsToSol,solToLamports} from "../src/money.ts";
 import {signAndSubmit,waitForReceipt} from "../src/transactions.ts";
 import {resolveWebConfig} from "../src/config.ts";
+import {localDateTime,eventSchedule} from "../src/schedule.ts";
+
+test("event schedule defaults preserve local datetime values and reject cleared input",()=>{
+ const start=new Date(2026,9,12,15,30);
+ assert.equal(localDateTime(start.getTime()),"2026-10-12T15:30");
+ assert.equal(eventSchedule("2026-10-12T15:30").opens,"2026-10-12T14:30");
+ assert.equal(eventSchedule("2026-10-12T15:30").closes,"2026-10-12T16:30");
+ assert.equal(eventSchedule("").rule1,"");
+});
 
 test("frontend config supports canonical and legacy names and preserves same-origin API base",()=>{
   assert.deepEqual(resolveWebConfig({}),{programId:undefined,apiBase:"http://localhost:3001"});

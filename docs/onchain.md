@@ -1,7 +1,8 @@
 # Anchor implementation v1
 Anchor 0.32.1 implements the instructions below. State layouts are in programs/seatback/src/state.rs.
-The development public key supports compilation/tests; no deployment is claimed.
-Generate a dedicated program key and regenerate compiler IDL before Devnet deployment.
+The configured public ID comes from a dedicated local Devnet program key; no deployment is claimed
+until independent verification is recorded. Compiler IDL regeneration and byte-for-byte CI comparison
+must pass before deployment. Private keypairs remain outside Git.
 
 ## PDA/account definitions
 Seeds use literal UTF-8 prefixes, 16-byte UUID bytes (not UUID text), 32-byte pubkeys and canonical bumps.

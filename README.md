@@ -26,6 +26,11 @@ Copy root .env.example to .env and supply the development-only backend values. A
 load this file deliberately. Run pnpm db:migrate first; run pnpm dev:worker in a third terminal.
 Service startup fails closed without PostgreSQL, a gate keypair, matching IDL and verified Devnet RPC.
 
+## Docker local environment
+See [docs/docker.md](docs/docker.md) for Docker Compose setup, external secret files, Devnet
+configuration, migrations and frontend integration requirements. After first-time configuration,
+run `docker compose up --build`. The Solana program remains deployed separately on Devnet.
+
 ## Workspace
 - apps/web: React + TypeScript + Vite; Developer 2 (Codex) owns frontend; untouched by backend.
 - apps/api: Node + TypeScript API; Codex owns backend.

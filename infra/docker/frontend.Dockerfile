@@ -10,7 +10,7 @@ COPY packages/contracts/package.json packages/contracts/package.json
 COPY packages/chain-client/package.json packages/chain-client/package.json
 RUN --mount=type=cache,id=seatback-pnpm,target=/pnpm/store \
     pnpm install --frozen-lockfile --store-dir=/pnpm/store
-COPY packages/contracts packages/contracts
+COPY packages packages
 COPY apps/web apps/web
 # Public configuration only. Empty API base means the browser's current origin.
 # Both spellings support the foundation example and Developer 2's current frontend.

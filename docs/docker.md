@@ -189,3 +189,14 @@ end-to-end check remains required with Developer 2 and the actual deployment.
 Official references: [Compose startup dependencies](https://docs.docker.com/compose/how-tos/startup-order/),
 [runtime secrets](https://docs.docker.com/compose/how-tos/use-secrets/),
 [pnpm multi-stage builds](https://pnpm.io/docker).
+
+## Executed validation
+
+On 2026-10-10, local infrastructure secret-loading tests, `pnpm check:foundation` and `pnpm check`
+passed (17 existing project tests, typechecks and production builds). Docker was not installed
+on the Windows development host, so no local container-startup success is claimed.
+[Hosted Docker run 38064139267](https://github.com/0xalpar/seatback/actions/runs/38064139267)
+built api, worker, migrate and web targets and passed the container smoke checks above on Linux.
+All application containers were healthy and the migration service exited zero. Mainnet rejection
+checks intentionally exited nonzero. The test RPC was synthetic; deployed-program execution,
+Phantom signing, real Devnet transactions and Developer 2's integrated UI remain unverified here.

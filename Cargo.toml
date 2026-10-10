@@ -1,5 +1,5 @@
 [workspace]
-members = ["programs/seatback", "tools/idl-gen"]
+members = ["programs/seatback", "tools/idl-gen", "tools/chain-tests"]
 resolver = "2"
 
 [profile.release]

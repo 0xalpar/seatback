@@ -24,7 +24,7 @@ jobs:
           tar -xjf "$RUNNER_TEMP/agave.tar.bz2" -C "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/solana-release/bin" >> "$GITHUB_PATH"
       - run: cargo build-sbf --manifest-path programs/seatback/Cargo.toml --tools-version v1.56 --arch sbfv0
-      - run: cargo test -p seatback -- --nocapture
+      - run: cargo test -p seatback -p seatback-chain-tests -- --nocapture
         env:
           SBF_OUT_DIR: ${{ github.workspace }}/target/deploy
   backend:

@@ -276,3 +276,14 @@ fn record(event:Pubkey,account:Pubkey,kind:u8,participant_amount:u64,organizer_a
     emit!(SeatBackEvent {event,account,kind,participant_amount,organizer_amount,timestamp:Clock::get()?.unix_timestamp});
     Ok(())
 }
+#[cfg(test)]
+mod hash_tests {
+    use super::*;
+    #[test]
+    fn matches_typescript_policy_vector() {
+        let p=Policy{deposit_lamports:1_000_001,rule1_deadline:100,rule2_deadline:200,
+            check_in_opens_at:300,check_in_closes_at:500,event_starts_at:400,event_ends_at:600,dispute_seconds:86400};
+        let hex=policy_digest(&p).unwrap().iter().map(|b|format!("{b:02x}")).collect::<String>();
+        assert_eq!(hex,"b80baffee9c8c854e351bfc7d12ae3dd43185c523289903ad55161f347ff5bb8");
+    }
+}

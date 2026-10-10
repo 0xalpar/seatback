@@ -11,10 +11,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@1.89.0
       - uses: Swatinem/rust-cache@v2
       - run: cargo test --lib
       - run: cargo run -p seatback-idl-gen
+        env:
+          RUSTUP_TOOLCHAIN: 1.89.0
       - name: Generated IDL
         run: echo "IDL_BASE64=$(base64 -w0 packages/chain-client/idl/seatback.json)"
   backend:

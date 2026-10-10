@@ -47,6 +47,9 @@ entries cannot rejoin in v1. No notification service is configured.
    with a reverse proxy to the API. Health is process liveness, not a deployment audit.
 
 ## Build and deployment prerequisites
+For local key generation, explicit signing authorization, pinned WSL installation and independent
+post-deployment verification, follow [Task 3 deployment workflow](devnet-deployment.md).
+
 Rust 1.89.0, Agave 2.3.13, platform tools v1.56; Anchor CLI 0.32.1 if using Anchor commands.
 Use Linux/WSL2 on this Windows machine. No program keypair is committed and no deployment is claimed.
 

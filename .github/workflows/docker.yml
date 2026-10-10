@@ -1,0 +1,44 @@
+name: docker
+on:
+  push:
+    branches: [infra/docker]
+  pull_request:
+    paths:
+      - 'infra/docker/**'
+      - 'compose.yaml'
+      - '.dockerignore'
+      - '.github/workflows/docker.yml'
+      - 'apps/**'
+      - 'packages/**'
+      - 'supabase/migrations/**'
+      - 'pnpm-*.yaml'
+permissions:
+  contents: read
+jobs:
+  compose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      DOCKER_FIXTURE_DIR: ${{ runner.temp }}/seatback-docker-fixture
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+      - name: Create disposable CI credentials outside checkout
+        run: |
+          node infra/docker/test/credentials.mjs "$DOCKER_FIXTURE_DIR"
+          openssl req -x509 -newkey rsa:2048 -nodes -keyout "$DOCKER_FIXTURE_DIR/tls.key" -out "$DOCKER_FIXTURE_DIR/tls.crt" -subj '/CN=rpc' -addext 'subjectAltName=DNS:rpc' -days 1
+          chmod 444 "$DOCKER_FIXTURE_DIR/tls.key" "$DOCKER_FIXTURE_DIR/tls.crt"
+      - name: Validate normal Compose configuration
+        run: docker compose --env-file "$DOCKER_FIXTURE_DIR/compose.env" config --quiet
+      - name: Build all images and test container startup, migrations and networking
+        run: bash infra/docker/test/smoke.sh
+      - name: Container status and redacted service logs
+        if: always()
+        run: |
+          docker compose --env-file "$DOCKER_FIXTURE_DIR/compose.env" -f compose.yaml -f infra/docker/test/compose.test.yaml ps -a
+          docker compose --env-file "$DOCKER_FIXTURE_DIR/compose.env" -f compose.yaml -f infra/docker/test/compose.test.yaml logs --no-color api worker migrate web
+      - name: Remove disposable CI containers
+        if: always()
+        run: docker compose --env-file "$DOCKER_FIXTURE_DIR/compose.env" -f compose.yaml -f infra/docker/test/compose.test.yaml down -v

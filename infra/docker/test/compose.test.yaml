@@ -1,0 +1,28 @@
+# Never included in normal local startup. Explicit synthetic RPC transport for CI only.
+services:
+  rpc:
+    image: node:24.19.0-bookworm-slim
+    command: [node, /test/rpc.mjs]
+    volumes:
+      - ./infra/docker/test/rpc.mjs:/test/rpc.mjs:ro
+      - ${DOCKER_FIXTURE_DIR:?CI fixture directory required}:/fixture:ro
+    networks: [application]
+  api:
+    environment:
+      SOLANA_RPC_URL: https://rpc:8899
+      NODE_EXTRA_CA_CERTS: /run/secrets/test-ca
+    secrets: [test-ca]
+    depends_on:
+      rpc:
+        condition: service_started
+  worker:
+    environment:
+      SOLANA_RPC_URL: https://rpc:8899
+      NODE_EXTRA_CA_CERTS: /run/secrets/test-ca
+    secrets: [test-ca]
+    depends_on:
+      rpc:
+        condition: service_started
+secrets:
+  test-ca:
+    file: ${DOCKER_FIXTURE_DIR:?CI fixture directory required}/tls.crt

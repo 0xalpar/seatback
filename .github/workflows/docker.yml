@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
-      DOCKER_FIXTURE_DIR: ${{ runner.temp }}/seatback-docker-fixture
+      DOCKER_FIXTURE_DIR: ${{ github.workspace }}/../seatback-docker-fixture
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -27,6 +27,7 @@ jobs:
           node-version-file: .node-version
       - name: Create disposable CI credentials outside checkout
         run: |
+          node --test infra/docker/test/environment.test.mjs
           node infra/docker/test/credentials.mjs "$DOCKER_FIXTURE_DIR"
           openssl req -x509 -newkey rsa:2048 -nodes -keyout "$DOCKER_FIXTURE_DIR/tls.key" -out "$DOCKER_FIXTURE_DIR/tls.crt" -subj '/CN=rpc' -addext 'subjectAltName=DNS:rpc' -days 1
           chmod 444 "$DOCKER_FIXTURE_DIR/tls.key" "$DOCKER_FIXTURE_DIR/tls.crt"

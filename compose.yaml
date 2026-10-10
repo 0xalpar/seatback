@@ -1,0 +1,122 @@
+name: seatback
+
+x-backend-environment: &backend-environment
+  NODE_ENV: production
+  PORT: "3001"
+  WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:5173}
+  SOLANA_CLUSTER: devnet
+  SOLANA_RPC_URL: ${SOLANA_RPC_URL:-https://api.devnet.solana.com}
+  ALLOW_LOCAL_VALIDATOR: "false"
+  SEATBACK_PROGRAM_ID: ${SEATBACK_PROGRAM_ID:?Set the deployed Devnet program ID matching the generated IDL}
+  DISPUTE_AUTHORITY: ${DISPUTE_AUTHORITY:?Set the independent Devnet arbiter public key}
+  GATE_KEYPAIR_PATH: /run/secrets/gate-keypair
+  POSTGRES_HOST: db
+  POSTGRES_USER: seatback
+  POSTGRES_DB: seatback
+  POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
+  SESSION_SECRET_FILE: /run/secrets/session-secret
+  ACCESS_CODE_PEPPER_FILE: /run/secrets/access-code-pepper
+
+x-backend: &backend
+  init: true
+  read_only: true
+  tmpfs: ["/tmp:rw,noexec,nosuid,size=16m,mode=1777"]
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  restart: unless-stopped
+  stop_grace_period: 30s
+  environment: *backend-environment
+  secrets: [postgres-password, session-secret, access-code-pepper, gate-keypair]
+  networks: [database, application]
+  depends_on:
+    db:
+      condition: service_healthy
+    migrate:
+      condition: service_completed_successfully
+
+services:
+  db:
+    image: postgres:16-bookworm
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: seatback
+      POSTGRES_DB: seatback
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+    secrets: [postgres-password]
+    volumes: ["postgres-data:/var/lib/postgresql/data"]
+    # No host port. Connect with compose exec or through the private service network.
+    networks: [database]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U seatback -d seatback -h 127.0.0.1"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+  migrate:
+    build:
+      context: .
+      dockerfile: infra/docker/backend.Dockerfile
+      target: migrate
+    init: true
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    restart: "no"
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_USER: seatback
+      POSTGRES_DB: seatback
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
+    secrets: [postgres-password]
+    networks: [database]
+    depends_on:
+      db:
+        condition: service_healthy
+  api:
+    <<: *backend
+    build:
+      context: .
+      dockerfile: infra/docker/backend.Dockerfile
+      target: api
+  worker:
+    <<: *backend
+    build:
+      context: .
+      dockerfile: infra/docker/backend.Dockerfile
+      target: worker
+  web:
+    build:
+      context: .
+      dockerfile: infra/docker/frontend.Dockerfile
+      args:
+        VITE_API_BASE: ""
+        VITE_API_BASE_URL: ""
+        VITE_SOLANA_RPC_URL: ${PUBLIC_SOLANA_RPC_URL:-https://api.devnet.solana.com}
+        VITE_SEATBACK_PROGRAM_ID: ${SEATBACK_PROGRAM_ID:?Set the deployed Devnet program ID}
+    ports: ["127.0.0.1:${WEB_PORT:-5173}:8080"]
+    read_only: true
+    tmpfs: ["/tmp:rw,noexec,nosuid,size=32m,mode=1777"]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+    networks: [application]
+    depends_on:
+      api:
+        condition: service_healthy
+
+networks:
+  database:
+    internal: true
+  application: {}
+volumes:
+  postgres-data: {}
+secrets:
+  postgres-password:
+    file: ${POSTGRES_PASSWORD_FILE:?Set an absolute secret file path outside Git}
+  session-secret:
+    file: ${SESSION_SECRET_FILE:?Set an absolute secret file path outside Git}
+  access-code-pepper:
+    file: ${ACCESS_CODE_PEPPER_FILE:?Set an absolute secret file path outside Git}
+  gate-keypair:
+    file: ${GATE_KEYPAIR_FILE:?Set an absolute dedicated Devnet gate keypair path outside Git}

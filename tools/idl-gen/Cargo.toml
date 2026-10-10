@@ -1,0 +1,9 @@
+[package]
+name = "seatback-idl-gen"
+version = "0.1.0"
+edition = "2021"
+[dependencies]
+anchor-lang-idl = { version = "=0.1.2", features = ["build"] }
+serde_json = "1"
+anyhow = "1"
+proc-macro2 = { version = "=1.0.103", features = ["proc-macro"] }

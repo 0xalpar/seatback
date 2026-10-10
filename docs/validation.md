@@ -1,4 +1,5 @@
 # Foundation validation — 2026-10-10
+Historical foundation-only record. Current implementation results are in [backend-validation.md](backend-validation.md).
 ## Passed locally
 Runtime Node v24.19.0; pnpm v11.25.0; TypeScript 5.9.3; React 19.1.1; Vite 7.3.5.
 - pnpm install --frozen-lockfile passed before the Vite update; subsequent pnpm install updated the committed lockfile.

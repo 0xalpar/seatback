@@ -15,3 +15,7 @@ idl-build = ["anchor-lang/idl-build"]
 [dependencies]
 anchor-lang = { version = "=0.32.1", features = ["init-if-needed"] }
 sha2 = "=0.10.9"
+[dev-dependencies]
+solana-program-test = "=2.3.13"
+solana-sdk = "=2.3.1"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }

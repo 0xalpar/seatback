@@ -43,7 +43,8 @@ pub mod seatback {
         s.event=ctx.accounts.event.key(); s.wallet=wallet; s.active=active; s.bump=ctx.bumps.scanner;
         record(s.event, Pubkey::default(), 2, 0, 0)
     }
-    pub fn register(ctx: Context<Register>, _admission_nonce_hash: [u8;32]) -> Result<()> {
+    pub fn register(ctx: Context<Register>, admission_nonce_hash: [u8;32]) -> Result<()> {
+        require!(admission_nonce_hash != [0;32], E::InvalidState);
         require!(ctx.accounts.offer.is_none(), E::InvalidOffer);
         reserve(ctx, false)
     }

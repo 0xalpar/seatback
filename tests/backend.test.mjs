@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile,readdir} from 'node:fs/promises';
 import {createPrivateKey,sign,randomUUID} from 'node:crypto';
 import {PGlite} from '@electric-sql/pglite';
+import {PostgresDatabase} from '../apps/api/dist/db.js';
 import {Auth} from '../apps/api/dist/auth.js';
 import {SeatBackService} from '../apps/api/dist/service.js';
 import {BackendWorker} from '../apps/api/dist/worker.js';
@@ -15,6 +16,18 @@ const programId=new PublicKey('Fg6PaFpoGXkYsidMpWxTWqkZqA1QJRF9q8RJkZ8fCkU');
 const config={webOrigin:'http://localhost:5173',authDomain:'localhost:5173',sessionSecret:'s'.repeat(40),codePepper:'p'.repeat(40),secureCookies:false,localValidator:true,disputeAuthority:Keypair.generate().publicKey.toBase58()};
 function walletSign(k,message){const key=createPrivateKey({key:Buffer.concat([Buffer.from('302e020100300506032b657004220420','hex'),Buffer.from(k.secretKey.slice(0,32))]),format:'der',type:'pkcs8'});return sign(null,Buffer.from(message),key).toString('base64');}
 async function database(){
+ if(process.env.TEST_DATABASE_URL){
+  // Only create/drop this test's randomly named schema; never reset a user's public schema.
+  const schema='seatback_test_'+randomUUID().replaceAll('-',''),admin=new PostgresDatabase(process.env.TEST_DATABASE_URL);
+  await admin.query('CREATE SCHEMA '+schema);
+  const url=new URL(process.env.TEST_DATABASE_URL);url.searchParams.set('options','-c search_path='+schema);
+  const db=new PostgresDatabase(url.href);
+  try{
+   for(const name of (await readdir(new URL('../supabase/migrations/',import.meta.url))).filter(n=>n.endsWith('.sql')).sort())
+    await db.query((await readFile(new URL('../supabase/migrations/'+name,import.meta.url),'utf8')).replaceAll('public.',schema+'.'));
+  }catch(error){await db.close();await admin.query('DROP SCHEMA '+schema+' CASCADE');await admin.close();throw error;}
+  const close=db.close.bind(db);db.schema=schema;db.close=async()=>{await close();await admin.query('DROP SCHEMA '+schema+' CASCADE');await admin.close();};return db;
+ }
  const pg=new PGlite();
  for(const name of (await readdir(new URL('../supabase/migrations/',import.meta.url))).filter(n=>n.endsWith('.sql')).sort())await pg.exec(await readFile(new URL('../supabase/migrations/'+name,import.meta.url),'utf8'));
  const wrap=p=>({query:async(sql,args=[])=>{const r=await p.query(sql,args);return {rows:r.rows,rowCount:r.affectedRows??r.rows.length};}});
@@ -30,7 +43,7 @@ async function seed(db,visibility='public'){
  return {id,organizer,participant,gate,arbiter,p,eventPda,state};
 }
 test('PostgreSQL migrations enforce immutable policy, capacity, money conservation and default-deny RLS',async()=>{
- const db=await database();try{
+ const db=await database(),role='browser_'+randomUUID().replaceAll('-','');try{
   const s=await seed(db);
   await db.query('UPDATE events SET terms_locked=true WHERE id=$1',[s.id]);
   await assert.rejects(db.query("UPDATE events SET deposit_lamports=2 WHERE id=$1",[s.id]),/immutable/);
@@ -38,9 +51,9 @@ test('PostgreSQL migrations enforce immutable policy, capacity, money conservati
   const r=randomUUID();await db.query("INSERT INTO registrations(id,event_id,wallet,reservation_pda,status,policy_snapshot,policy_hash,deposit_lamports,dispute_deadline) VALUES($1,$2,$3,$4,'reserved',$5,$6,1000001,$7)",[r,s.id,s.participant.publicKey.toBase58(),Keypair.generate().publicKey.toBase58(),JSON.stringify(s.p),sha('policy'),new Date((s.p.checkInClosesAt+86400)*1000)]);
   await assert.rejects(db.query('UPDATE registrations SET participant_paid_lamports=1000002 WHERE id=$1',[r]),/check constraint/);
   await assert.rejects(db.query("UPDATE registrations SET policy_snapshot='{}' WHERE id=$1",[r]),/immutable/);
-  await db.query('CREATE ROLE browser');await db.query('GRANT USAGE ON SCHEMA public TO browser');await db.query('GRANT SELECT ON events TO browser');await db.query('SET ROLE browser');
+  await db.query('CREATE ROLE '+role);await db.query('GRANT USAGE ON SCHEMA '+(db.schema??'public')+' TO '+role);await db.query('GRANT SELECT ON events TO '+role);await db.query('SET ROLE '+role);
   assert.equal((await db.query('SELECT * FROM events')).rows.length,0);await db.query('RESET ROLE');
- }finally{await db.close();}
+ }finally{await db.query('RESET ROLE');await db.query('DROP OWNED BY '+role).catch(()=>{});await db.query('DROP ROLE IF EXISTS '+role);await db.close();}
 });
 test('wallet challenges bind domain and message, reject wrong signatures and replay; sessions revoke and expire',async()=>{
  const db=await database();try{

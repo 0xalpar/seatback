@@ -45,6 +45,20 @@ jobs:
             Cargo.lock
   backend:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        database: [embedded, postgres]
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: seatback_test
+          POSTGRES_PASSWORD: seatback_test
+          POSTGRES_DB: seatback_test
+        ports: ['5432:5432']
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      TEST_DATABASE_URL: ${{ matrix.database == 'postgres' && 'postgresql://seatback_test:seatback_test@localhost:5432/seatback_test' || '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

@@ -1,15 +1,10 @@
-use anchor_lang::{AccountDeserialize, InstructionData, ToAccountMetas, prelude::AccountInfo};
-use solana_program_test::{processor, ProgramTest, ProgramTestContext};
-use solana_sdk::{account::Account, clock::Clock, entrypoint::ProgramResult, instruction::Instruction,
+use anchor_lang::{AccountDeserialize, InstructionData, ToAccountMetas};
+use solana_program_test::{ProgramTest, ProgramTestContext};
+use solana_sdk::{account::Account, clock::Clock, instruction::Instruction,
     pubkey::Pubkey, signature::{Keypair, Signer}, transaction::Transaction, system_program,
     compute_budget::ComputeBudgetInstruction};
 use seatback::{state::{Policy, Event, Reservation}, accounts as a, instruction as i};
 
-fn native<'a, 'b, 'c, 'd>(program: &'a Pubkey, accounts: &'b [AccountInfo<'c>], data: &'d [u8]) -> ProgramResult {
-    // ProgramTest's processor has independent slice/data lifetimes; Anchor ties the slice to
-    // account data. Leak only this test-owned vector of cloned handles, never widen lifetimes.
-    seatback::entry(program, Box::leak(accounts.to_vec().into_boxed_slice()), data)
-}
 fn addr(prefix:&[u8], seeds:&[&[u8]]) -> Pubkey {
     let mut all=vec![prefix];all.extend_from_slice(seeds);
     Pubkey::find_program_address(&all,&seatback::id()).0
@@ -68,7 +63,8 @@ async fn register(h:&mut Harness,event:Pubkey,p:&Keypair,gate:&Keypair,offer:Opt
 async fn escrow_and_adversarial_lifecycle() {
  let organizer=Keypair::new();let gate=Keypair::new();let arbiter=Keypair::new();
  let alice=Keypair::new();let bob=Keypair::new();let attacker=Keypair::new();
- let mut test=ProgramTest::new("seatback",seatback::id(),processor!(native));
+ // Execute the compiled SBF artifact, including actual system-program CPI.
+ let mut test=ProgramTest::new("seatback",seatback::id(),None);
  for key in [&organizer,&gate,&arbiter,&alice,&bob,&attacker] {
   test.add_account(key.pubkey(),Account{lamports:10_000_000_000,data:vec![],owner:system_program::id(),executable:false,rent_epoch:0});
  }

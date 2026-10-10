@@ -15,27 +15,23 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           cache-on-failure: true
-      - run: cargo run -p seatback-idl-gen
+      - run: cargo run --locked -p seatback-idl-gen
         env:
           RUSTUP_TOOLCHAIN: 1.89.0
           # Published IDL builder 0.1.2 forces procmacro2_semver_exempt. This
           # compiler-only setting is scoped to IDL generation, never SBF builds.
           RUSTC_BOOTSTRAP: 1
-      - name: Generated IDL
-        run: echo "IDL_BASE64=$(base64 -w0 packages/chain-client/idl/seatback.json)"
       - name: Install Agave build tools
         run: |
           curl --fail --location --retry 3 https://github.com/anza-xyz/agave/releases/download/v2.3.13/solana-release-x86_64-unknown-linux-gnu.tar.bz2 -o "$RUNNER_TEMP/agave.tar.bz2"
           tar -xjf "$RUNNER_TEMP/agave.tar.bz2" -C "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/solana-release/bin" >> "$GITHUB_PATH"
-      - run: cargo build-sbf --manifest-path programs/seatback/Cargo.toml --tools-version v1.56 --arch v0
-      - run: cargo test -p seatback -p seatback-chain-tests -- --nocapture
+      - run: cargo build-sbf --manifest-path programs/seatback/Cargo.toml --tools-version v1.56 --arch v0 -- --locked
+      - run: cargo test --locked -p seatback -p seatback-chain-tests -- --nocapture
         env:
           SBF_OUT_DIR: ${{ github.workspace }}/target/deploy
-      - name: Preserve reproducible dependency lock
-        run: echo "CARGO_LOCK_BASE64=$(base64 -w0 Cargo.lock)"
-      - name: Check generated IDL is current
-        run: git diff --exit-code -- packages/chain-client/idl/seatback.json
+      - name: Check generated IDL and dependency lock are current
+        run: git diff --exit-code -- Cargo.lock packages/chain-client/idl/seatback.json
       - uses: actions/upload-artifact@v4
         with:
           name: seatback-sbf-and-idl

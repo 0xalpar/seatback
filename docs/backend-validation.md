@@ -3,7 +3,8 @@
 ## Executed checks
 - Node 24.19.0, pnpm 11.25.0, TypeScript 5.9.3. Workspace strict type checks and production builds pass,
   including the unchanged frontend foundation. Foundation/OpenAPI/RLS inventory checks and git diff --check pass.
-- 16 Node tests pass. Both SQL migrations execute against PGlite, an actual embedded PostgreSQL engine.
+- 16 Node tests pass locally and in each hosted database configuration. Both SQL migrations execute
+  against PGlite and a PostgreSQL 16 service using the real pg driver, isolated schemas and DB roles.
   Coverage includes constraints/RLS/immutable snapshots, wallet signatures/nonces/sessions,
   CSRF/origin/cookies, private discovery, concurrent queue scheduling, QR expiry/co-signing,
   partial transaction signatures/tampering, finalized projection slots, generated IDL encoding,
@@ -18,13 +19,16 @@
   capacity/lifetime caps, gate/arbiter authorization, delegated/revoked scanners, missing participant
   signature, replay, dispute-wide settlement blocking, independent arbitration, cancellation refunds,
   offer holding/accept/expiry and finalized withdrawals. Additional tests/checks run in subsequent CI commits.
+  PostgreSQL/embedded matrix and expanded arbitration tests pass in:
+  https://github.com/0xalpar/seatback/actions/runs/38059712895
+  The tested compiler-resolved Cargo.lock is preserved; CI enforces locked builds and current generated IDL.
 - Read-only live Devnet RPC query and actual ChainClient.assertNetwork pass. The full genesis hash,
   not the shortened wallet chain identifier, is verified. No funded account or deployment is created.
 
 ## Boundaries and required manual work
 Rust/Anchor/Solana/PostgreSQL CLIs and Docker are absent on this Windows host; Rust/SBF checks run
-on hosted Ubuntu. Node RPC tests use explicit doubles; embedded SQL tests do not replace tests against
-the chosen live Supabase/PostgreSQL instance. No Phantom/browser integration or Devnet deployment
+on hosted Ubuntu. Node RPC tests use explicit doubles; hosted PostgreSQL tests do not replace setup against
+the chosen Supabase/development database instance. No Phantom/browser integration or Devnet deployment
 has been run. No security audit is claimed. Compiler cfg/deprecated SDK warnings are non-fatal.
 
 Provision a disposable database, secrets and dedicated gate/arbiter/program wallets outside Git,

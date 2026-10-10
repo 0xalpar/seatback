@@ -51,9 +51,9 @@ Rust 1.89.0, Agave 2.3.13, platform tools v1.56; Anchor CLI 0.32.1 if using Anch
 Use Linux/WSL2 on this Windows machine. No program keypair is committed and no deployment is claimed.
 
 ```sh
-RUSTC_BOOTSTRAP=1 RUSTUP_TOOLCHAIN=1.89.0 cargo run -p seatback-idl-gen
-cargo build-sbf --manifest-path programs/seatback/Cargo.toml --tools-version v1.56 --arch v0
-SBF_OUT_DIR="$PWD/target/deploy" cargo test -p seatback -p seatback-chain-tests -- --nocapture
+RUSTC_BOOTSTRAP=1 RUSTUP_TOOLCHAIN=1.89.0 cargo run --locked -p seatback-idl-gen
+cargo build-sbf --manifest-path programs/seatback/Cargo.toml --tools-version v1.56 --arch v0 -- --locked
+SBF_OUT_DIR="$PWD/target/deploy" cargo test --locked -p seatback -p seatback-chain-tests -- --nocapture
 pnpm install --frozen-lockfile
 pnpm check:foundation
 pnpm check
@@ -73,6 +73,8 @@ persist before broadcast; ambiguous timeout stays pending and retries resend ide
 Bounded recent event history recovers approved wallet-direct broadcasts. High event throughput or
 extended RPC history loss needs operator backfill; this is not a full indexer of actions never prepared
 by the API. Financial rules remain on-chain even when projections lag.
+HTTP idempotency claims also fail closed after a process crash; an operator must reconcile a stuck
+REQUEST_IN_PROGRESS key against its persisted intent before releasing it. Never assume a timeout failed.
 
 Outbox leases/event locks serialize scheduling; chain capacity rejects remaining races. Gate is trusted
 for FIFO/private admission, not custody. Dead jobs log IDs and require operator reconciliation;

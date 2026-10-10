@@ -8,6 +8,8 @@ tests/backend.test.mjs applies both migrations to PGlite (an embedded actual Pos
 then tests RLS, immutable terms/snapshots, money constraints, Ed25519 login/replay/expiry,
 HTTP cookie/CSRF/origin behavior, private discovery, FIFO scheduling, QR leases/co-signing,
 intent tampering/partial signatures/ambiguous broadcast, finalized projections/stale slots and real IDL encoding.
+CI runs the same suite against PostgreSQL 16 with the pg driver as well. TEST_DATABASE_URL selects
+that mode; fixtures create/drop only randomized test schemas and roles, never reset public schema.
 RPC responses in Node tests are explicit test doubles; they do not establish smart-contract execution.
 See docs/backend-integration.md for compiled SBF test commands. tools/chain-tests executes the actual
 SBF program in solana-program-test, including system-program CPI. Reference policy tests are separate.

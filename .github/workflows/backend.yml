@@ -13,6 +13,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@1.89.0
       - uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
       - run: cargo run -p seatback-idl-gen
         env:
           RUSTUP_TOOLCHAIN: 1.89.0
@@ -30,6 +32,17 @@ jobs:
       - run: cargo test -p seatback -p seatback-chain-tests -- --nocapture
         env:
           SBF_OUT_DIR: ${{ github.workspace }}/target/deploy
+      - name: Preserve reproducible dependency lock
+        run: echo "CARGO_LOCK_BASE64=$(base64 -w0 Cargo.lock)"
+      - name: Check generated IDL is current
+        run: git diff --exit-code -- packages/chain-client/idl/seatback.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: seatback-sbf-and-idl
+          path: |
+            target/deploy/seatback.so
+            packages/chain-client/idl/seatback.json
+            Cargo.lock
   backend:
     runs-on: ubuntu-latest
     steps:

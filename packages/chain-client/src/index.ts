@@ -53,8 +53,8 @@ export class ChainClient {
   }
   async assertNetwork(local=false):Promise<void> {
     const genesis=await this.connection.getGenesisHash();
-    if(genesis==="5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp" ||
-      (!local&&genesis!=="EtWTRABZaYq6iMfeYKouRu166VU2xqa1"))throw new Error("NON_DEVNET_RPC");
+    if(genesis.startsWith("5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp") ||
+      (!local&&genesis!=="EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG"))throw new Error("NON_DEVNET_RPC");
   }
 }
 export function mergeSignedTransactions(expected:Transaction,incoming:Transaction,caller:PublicKey,programId:PublicKey):Transaction {

@@ -27,7 +27,7 @@ export class Intents {
  async submit(id:string,wire:string,wallet:string):Promise<TxReceipt> {
   // Validate before the row lock; locks protect signature merging only, never RPC calls.
   const before=await this.row(id,wallet);
-  if(before.signature)return {intentId:id,signature:before.signature,status:before.status==="failed"?"failed":before.status==="confirmed"?"confirmed":"pending"};
+  if(before.signature)return {intentId:id,signature:before.signature,status:before.status==="failed"||before.status==="expired"?"failed":before.status==="confirmed"?"confirmed":"pending"};
   ensure(new Date(before.expires_at).getTime()>this.now(),410,"INTENT_EXPIRED");
   ensure(await this.chain.connection.getBlockHeight("confirmed")<=Number(before.last_valid_block_height),410,"BLOCKHASH_EXPIRED");
   let incoming:Transaction;try{incoming=Transaction.from(Buffer.from(wire,"base64"));}catch{throw new HttpError(422,"INVALID_TRANSACTION");}

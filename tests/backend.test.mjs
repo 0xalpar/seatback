@@ -69,7 +69,7 @@ test('private discovery, QR authorization and FIFO waitlist outbox are enforced 
   await service.access(s.id,s.participant.publicKey.toBase58(),'secret-code');
   assert.equal((await service.event(s.id,s.participant.publicKey.toBase58())).id,s.id);
   const joined=await service.waitlist(s.id,s.participant.publicKey.toBase58());assert.equal(joined.position,1);
-  const worker=new BackendWorker(service);await worker.queueOffers();await worker.queueOffers();
+  const worker=new BackendWorker(service);await Promise.all([worker.queueOffers(),new BackendWorker(service).queueOffers()]);
   assert.equal((await db.query('SELECT * FROM seat_offers')).rows.length,1);assert.equal((await db.query('SELECT * FROM outbox_jobs')).rows.length,1);
   await assert.rejects(service.attendance(s.id,s.participant.publicKey.toBase58(),'a'.repeat(43)),/UNAUTHORIZED_SCANNER/);
   assert.ok(verifyCode('secret-code',hashCode('secret-code',config.codePepper),config.codePepper));
@@ -159,7 +159,7 @@ test('finalized account projections persist financial state and reject older slo
 });
 test('compiler-generated Anchor IDL encodes real API event/registration and optional accounts',async()=>{
  const db=await database();try{
-  const s=await seed(db),connection={getLatestBlockhash:async()=>({blockhash:Keypair.generate().publicKey.toBase58(),lastValidBlockHeight:100}),getAccountInfo:async()=>null,getGenesisHash:async()=> 'EtWTRABZaYq6iMfeYKouRu166VU2xqa1'};
+  const s=await seed(db),connection={getLatestBlockhash:async()=>({blockhash:Keypair.generate().publicKey.toBase58(),lastValidBlockHeight:100}),getAccountInfo:async()=>null,getGenesisHash:async()=> 'EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG'};
   const chain=new ChainClient(connection,programId);assert.equal(loadIdl().instructions.length,17);await chain.assertNetwork();
   assert.equal(policyDigest({depositLamports:'1000001',rule1Deadline:100,rule2Deadline:200,checkInOpensAt:300,checkInClosesAt:500,eventStartsAt:400,eventEndsAt:600,disputeSeconds:86400}).toString('hex'),'b80baffee9c8c854e351bfc7d12ae3dd43185c523289903ad55161f347ff5bb8');
   const service=new SeatBackService(db,chain,s.gate,{...config,disputeAuthority:s.arbiter.publicKey.toBase58()});
@@ -172,4 +172,34 @@ test('compiler-generated Anchor IDL encodes real API event/registration and opti
   assert.ok(tx.instructions[0].keys.some(k=>k.pubkey.equals(programId)&&!k.isSigner&&!k.isWritable));
   connection.getGenesisHash=async()=> '5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp';await assert.rejects(chain.assertNetwork(true),/NON_DEVNET_RPC/);
  }finally{await db.close();}
+});
+test('outbox retry keeps one offer intent across ambiguous broadcast instead of spending fees twice',async()=>{
+ const db=await database();try{
+  const s=await seed(db),chain={programId,account:async name=>name==='Event'?s.state:null,
+   instruction:()=>({programId,keys:[{pubkey:s.gate.publicKey,isSigner:true,isWritable:true}],data:Buffer.from([4])}),
+   connection:{getLatestBlockhash:async()=>({blockhash:Keypair.generate().publicKey.toBase58(),lastValidBlockHeight:100}),getBlockHeight:async()=>10,sendRawTransaction:async()=>{throw Error('timeout');}}};
+  const service=new SeatBackService(db,chain,s.gate,config),worker=new BackendWorker(service);
+  await service.waitlist(s.id,s.participant.publicKey.toBase58());await worker.queueOffers();await worker.jobs();
+  const first=(await db.query('SELECT * FROM outbox_jobs')).rows[0];assert.equal(first.status,'pending');assert.ok(first.payload.intentId);
+  await db.query("UPDATE outbox_jobs SET available_at='2000-01-01'");await worker.jobs();
+  assert.equal((await db.query('SELECT * FROM transaction_intents')).rows.length,1);
+  assert.equal((await db.query('SELECT payload FROM outbox_jobs')).rows[0].payload.intentId,first.payload.intentId);
+ }finally{await db.close();}
+});
+test('economic HTTP idempotency returns the same real intent and rejects changed payloads',async()=>{
+ const db=await database();let server;
+ try{
+  const s=await seed(db),cfg={...config,disputeAuthority:s.arbiter.publicKey.toBase58()},auth=new Auth(db,cfg);
+  const chain=new ChainClient({getLatestBlockhash:async()=>({blockhash:Keypair.generate().publicKey.toBase58(),lastValidBlockHeight:100})},programId);
+  const service=new SeatBackService(db,chain,s.gate,cfg),wallet=s.organizer.publicKey.toBase58();
+  const challenge=await auth.challenge(wallet,cfg.authDomain,cfg.webOrigin),session=await auth.verify(challenge.challengeId,wallet,walletSign(s.organizer,challenge.message));
+  server=createApiServer({db,auth,service,config:cfg});await new Promise(r=>server.listen(0,'127.0.0.1',r));
+  const body={title:'Idempotent event',description:'Test',location:'Istanbul',visibility:'public',capacity:1,registrationLimit:3,policy:s.p},key=randomUUID();
+  const post=b=>fetch('http://127.0.0.1:'+server.address().port+'/v1/events',{method:'POST',headers:{Origin:cfg.webOrigin,'Content-Type':'application/json',Cookie:auth.cookie(session.raw),'X-CSRF-Token':session.csrfToken,'Idempotency-Key':key},body:JSON.stringify(b)});
+  const first=await post(body);assert.equal(first.status,201);const result=await first.json();
+  const again=await post(body);assert.equal(again.status,201);assert.deepEqual(await again.json(),result);
+  assert.equal((await post({...body,title:'Different'})).status,409);
+  assert.equal((await db.query("SELECT * FROM events WHERE title='Idempotent event'")).rows.length,1);
+  assert.equal((await db.query('SELECT * FROM transaction_intents')).rows.length,1);
+ }finally{if(server)await new Promise(r=>server.close(r));await db.close();}
 });

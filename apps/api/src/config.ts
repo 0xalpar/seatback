@@ -7,6 +7,8 @@ export function loadConfig(env:NodeJS.ProcessEnv=process.env):Config {
   const required=(name:string)=>{const v=env[name];if(!v)throw new Error("Missing "+name);return v;};
   if(env.SOLANA_CLUSTER!=="devnet")throw new Error("SOLANA_CLUSTER must be devnet");
   const webOrigin=new URL(required("WEB_ORIGIN")).origin;
+  const web=new URL(webOrigin);
+  if(!["http:","https:"].includes(web.protocol)||web.protocol==='http:'&&!["localhost","127.0.0.1"].includes(web.hostname))throw new Error("WEB_ORIGIN requires HTTPS outside localhost");
   const sessionSecret=required("SESSION_SECRET"),codePepper=required("ACCESS_CODE_PEPPER");
   if(sessionSecret.length<32||codePepper.length<32)throw new Error("Secrets must be at least 32 characters");
   const rpcUrl=required("SOLANA_RPC_URL");

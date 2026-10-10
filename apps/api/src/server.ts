@@ -78,8 +78,8 @@ export function createApiServer(deps?:Dependencies) {
     try{const result=await action();await db.query("UPDATE idempotency_keys SET response=$4,http_status=$5 WHERE wallet=$1 AND route=$2 AND key=$3",[wallet,route,key,JSON.stringify(result),status]);return send(status,result);}
     catch(error){await db.query("DELETE FROM idempotency_keys WHERE wallet=$1 AND route=$2 AND key=$3 AND response IS NULL",[wallet,route,key]);throw error;}
    };
-   if(path==="/v1/events"&&method==="POST"){const {accessCode,...b}=v.createEvent.parse(body);return economic(()=>service.createEvent(wallet,{...b,...(accessCode?{accessCode}:{})}));}
-   if(details&&method==="PATCH"){const b=v.metadata.parse(body),id=v.uuid.parse(details[1]);return economic(()=>service.metadata(id,wallet,b));}
+   if(path==="/v1/events"&&method==="POST"){const {accessCode,...b}=v.createEvent.parse(body);return await economic(()=>service.createEvent(wallet,{...b,...(accessCode?{accessCode}:{})}));}
+   if(details&&method==="PATCH"){const b=v.metadata.parse(body),id=v.uuid.parse(details[1]);return await economic(()=>service.metadata(id,wallet,b));}
    const event=path.match(/^\/v1\/events\/([^/]+)\/(capabilities|access|register|cancel|participants|waitlist|scanners|attendance\/verify)$/);
    if(event) {
     const id=v.uuid.parse(event[1]),action=event[2];
@@ -88,25 +88,25 @@ export function createApiServer(deps?:Dependencies) {
     if(action==="participants"&&method==="GET")return send(200,await service.listRegistrations(wallet,id,p.limit,p.cursor));
     if(action==="waitlist"&&method==="POST"){v.empty.parse(body);return send(201,await service.waitlist(id,wallet));}
     if(action==="waitlist"&&method==="DELETE"){await service.waitlist(id,wallet,true);return send(204);}
-    if(action==="register"&&method==="POST"){v.empty.parse(body);return economic(()=>service.reserve(id,wallet));}
-    if(action==="cancel"&&method==="POST"){v.empty.parse(body);return economic(()=>service.cancelEvent(id,wallet));}
-    if(action==="scanners"&&method==="POST"){const b=z.object({wallet:v.wallet}).strict().parse(body);return economic(()=>service.scanner(id,wallet,b.wallet,true));}
-    if(action==="attendance/verify"&&method==="POST"){const b=z.object({token:z.string().regex(/^[A-Za-z0-9_-]{43}$/)}).strict().parse(body);return economic(()=>service.attendance(id,wallet,b.token));}
+    if(action==="register"&&method==="POST"){v.empty.parse(body);return await economic(()=>service.reserve(id,wallet));}
+    if(action==="cancel"&&method==="POST"){v.empty.parse(body);return await economic(()=>service.cancelEvent(id,wallet));}
+    if(action==="scanners"&&method==="POST"){const b=z.object({wallet:v.wallet}).strict().parse(body);return await economic(()=>service.scanner(id,wallet,b.wallet,true));}
+    if(action==="attendance/verify"&&method==="POST"){const b=z.object({token:z.string().regex(/^[A-Za-z0-9_-]{43}$/)}).strict().parse(body);return await economic(()=>service.attendance(id,wallet,b.token));}
    }
    const scanner=path.match(/^\/v1\/events\/([^/]+)\/scanners\/([^/]+)$/);
-   if(scanner&&method==="DELETE"){const id=v.uuid.parse(scanner[1]),address=v.wallet.parse(scanner[2]);return economic(()=>service.scanner(id,wallet,address,false));}
+   if(scanner&&method==="DELETE"){const id=v.uuid.parse(scanner[1]),address=v.wallet.parse(scanner[2]);return await economic(()=>service.scanner(id,wallet,address,false));}
    const reg=path.match(/^\/v1\/registrations\/([^/]+)\/(cancel|claim-refund|withdraw|qr|disputes)$/);
    if(reg&&method==="POST") {
     const id=v.uuid.parse(reg[1]),action=reg[2];
     if(action==="qr"){v.empty.parse(body);return send(201,await service.qr(id,wallet));}
-    if(action==="disputes"){const b=z.object({evidenceText:z.string().min(1).max(4000)}).strict().parse(body);return economic(()=>service.registrationAction("open_dispute",id,wallet,b));}
+    if(action==="disputes"){const b=z.object({evidenceText:z.string().min(1).max(4000)}).strict().parse(body);return await economic(()=>service.registrationAction("open_dispute",id,wallet,b));}
     v.empty.parse(body);const kind=action==="cancel"?"cancel_reservation":action==="withdraw"?"withdraw_allocation":"claim_cancelled_event_refund";
-    return economic(()=>service.registrationAction(kind,id,wallet));
+    return await economic(()=>service.registrationAction(kind,id,wallet));
    }
    const offer=path.match(/^\/v1\/offers\/([^/]+)\/accept$/);
-   if(offer&&method==="POST"){const id=v.uuid.parse(offer[1]);v.empty.parse(body);return economic(()=>service.acceptOffer(id,wallet));}
+   if(offer&&method==="POST"){const id=v.uuid.parse(offer[1]);v.empty.parse(body);return await economic(()=>service.acceptOffer(id,wallet));}
    const dispute=path.match(/^\/v1\/disputes\/([^/]+)\/resolve$/);
-   if(dispute&&method==="POST"){const id=v.uuid.parse(dispute[1]),b=z.object({outcome:z.enum(["participant","organizer"])}).strict().parse(body);return economic(()=>service.resolveDispute(id,wallet,b.outcome));}
+   if(dispute&&method==="POST"){const id=v.uuid.parse(dispute[1]),b=z.object({outcome:z.enum(["participant","organizer"])}).strict().parse(body);return await economic(()=>service.resolveDispute(id,wallet,b.outcome));}
    throw new HttpError(404,"NOT_FOUND");
   } catch(error) {
    if(res.writableEnded)return;

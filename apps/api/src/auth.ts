@@ -8,7 +8,7 @@ export class Auth {
   async challenge(wallet:string,domain:string,uri:string) {
     try { walletBytes(wallet); } catch { throw new HttpError(400,"INVALID_WALLET"); }
     let url:URL;try{url=new URL(uri);}catch{throw new HttpError(400,"INVALID_URI");}
-    ensure(domain===this.config.authDomain&&url.origin===this.config.webOrigin,400,"INVALID_DOMAIN");
+    ensure(domain===this.config.authDomain&&url.origin===this.config.webOrigin&&!/[\r\n]/.test(uri),400,"INVALID_DOMAIN");
     const challengeId=randomUUID(),nonce=token(),expiresAt=Math.floor(this.now()/1000)+300;
     const message=domain+" wants you to sign in with your Solana account:\n"+wallet+
       "\n\nSign in to SeatBack. This does not authorize a transaction.\n\nURI: "+uri+

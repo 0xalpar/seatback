@@ -206,4 +206,22 @@ async fn escrow_and_adversarial_lifecycle() {
  assert!(register(&mut h,event,&alice,&gate,None).await);
  assert!(h.send(ix(common(event,alice.pubkey(),organizer.pubkey(),alice.pubkey()),i::CancelReservation{}),&[&alice]).await);
  assert!(!register(&mut h,event,&bob,&gate,None).await);
+ // Organizer arbitration outcome and strict dispute cutoff, including lazy no-show settlement.
+ let event=make_event(&mut h,10,&organizer,&gate,&arbiter,2).await;
+ assert!(register(&mut h,event,&alice,&gate,None).await);assert!(register(&mut h,event,&bob,&gate,None).await);
+ h.clock(499).await;assert!(!h.send(ix(common(event,bob.pubkey(),organizer.pubkey(),attacker.pubkey()),i::MarkNoShow{}),&[&attacker]).await);
+ h.clock(500).await;
+ let c=common(event,alice.pubkey(),organizer.pubkey(),alice.pubkey());let reservation=c.reservation;let vault=c.vault;
+ let dispute=addr(b"dispute",&[reservation.as_ref()]);
+ assert!(h.send(ix(a::OpenDispute{event,reservation,vault,participant:alice.pubkey(),organizer:organizer.pubkey(),actor:alice.pubkey(),dispute,system_program:system_program::id()},i::OpenDispute{evidence_hash:[7;32]}),&[&alice]).await);
+ let resolve=||a::ResolveDispute{event,reservation,vault,participant:alice.pubkey(),organizer:organizer.pubkey(),actor:arbiter.pubkey(),dispute};
+ assert!(h.send(ix(resolve(),i::ResolveDispute{outcome:2}),&[&arbiter]).await);
+ assert!(!h.send(ix(resolve(),i::ResolveDispute{outcome:1}),&[&arbiter]).await);
+ h.clock(86900).await;
+ let c=common(event,bob.pubkey(),organizer.pubkey(),bob.pubkey());let bob_dispute=addr(b"dispute",&[c.reservation.as_ref()]);
+ assert!(!h.send(ix(a::OpenDispute{event,reservation:c.reservation,vault:c.vault,participant:bob.pubkey(),organizer:organizer.pubkey(),actor:bob.pubkey(),dispute:bob_dispute,system_program:system_program::id()},i::OpenDispute{evidence_hash:[8;32]}),&[&bob]).await);
+ assert!(h.send(ix(common(event,bob.pubkey(),organizer.pubkey(),attacker.pubkey()),i::SettleNoShow{}),&[&attacker]).await);
+ assert!(h.send(ix(common(event,alice.pubkey(),organizer.pubkey(),organizer.pubkey()),i::WithdrawAllocation{}),&[&organizer]).await);
+ assert!(h.send(ix(common(event,bob.pubkey(),organizer.pubkey(),organizer.pubkey()),i::WithdrawAllocation{}),&[&organizer]).await);
+ assert_eq!(h.event(event).await.outstanding_lamports,0);
 }

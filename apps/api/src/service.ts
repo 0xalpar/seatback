@@ -137,6 +137,7 @@ export class SeatBackService {
  async scanner(id:string,wallet:string,scannerWallet:string,active:boolean) {
   const row=await this.rawEvent(id),e=await this.chainEvent(row);ensure(e.organizer.toBase58()===wallet,403,"FORBIDDEN");
   const event=new PublicKey(row.event_pda),scanner=new PublicKey(scannerWallet);
+  await this.db.query("INSERT INTO wallets(address) VALUES($1) ON CONFLICT DO NOTHING",[scannerWallet]);
   const ix=this.chain.instruction("set_scanner",{wallet:scanner,active},{event,organizer:new PublicKey(wallet),
    scanner:pda(this.chain.programId,"scanner",event.toBytes(),scanner.toBytes()),system_program:systemProgram});
   return this.intents.create("scanner",wallet,id,ix,{scannerWallet,active});

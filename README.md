@@ -56,4 +56,4 @@ and lockfiles; backend owns contract changes. See AGENTS.md and docs/frontend-ta
 6. Configure HTTPS origin, secure cookies, private event code hashing, scheduler and RPC health monitoring.
 7. Complete live PostgreSQL/Phantom/Devnet integration with Developer 2 before enabling a deposit UI.
 
-See docs/validation.md for actual executed checks and current limitations.
+See docs/backend-validation.md for executed checks and current limitations.

@@ -12,9 +12,13 @@ curl --fail --silent http://localhost:5173/health | grep -q '"mode":"backend"'
 curl --fail --silent http://localhost:5173/v1/events | grep -q '"items":\[\]'
 if command -v google-chrome >/dev/null 2>&1; then
   google-chrome --headless --no-sandbox --disable-gpu --disable-dev-shm-usage \
-    --virtual-time-budget=5000 --dump-dom http://localhost:5173/ \
+    --virtual-time-budget=5000 --dump-dom http://localhost:5173/events \
     > "$DOCKER_FIXTURE_DIR/browser.html" 2> "$DOCKER_FIXTURE_DIR/browser.log"
-  grep -q 'Plans worth' "$DOCKER_FIXTURE_DIR/browser.html"
+  if ! grep -q 'Plans worth' "$DOCKER_FIXTURE_DIR/browser.html"; then
+    cat "$DOCKER_FIXTURE_DIR/browser.log"
+    head -c 12000 "$DOCKER_FIXTURE_DIR/browser.html"
+    exit 1
+  fi
   echo 'Integrated React application rendered in headless Chrome.'
 else
   echo 'Headless Chrome unavailable; HTTP serving checks only.'

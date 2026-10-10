@@ -36,6 +36,19 @@ persistent named volume. `docker compose down` preserves data; never use `down -
 API health proves process/database operation, not deployed contracts, funded gate or wallet access.
 An empty event list is expected before a real event is created. No sample chain success is seeded.
 
+On the prepared Windows computer, these local runtime checks have passed: four images built,
+all four long-running services healthy, both migrations, RLS/immutability checks, browser rendering,
+and real API wallet authentication including replay/CSRF rejection and logout. Re-run the last check
+with an existing dedicated local test key (no private/session values are printed):
+
+```powershell
+node scripts/runtime-auth-smoke.mjs C:\Users\Mustafa\.seatback\devnet\participant-keypair.json
+```
+
+This is message authentication with a test key, **not Phantom or on-chain transaction verification**.
+The Codex in-app browser has no Phantom extension. Open the same localhost URL in your own
+Phantom-enabled browser for the interactive wallet rehearsal.
+
 Keep the current compiler IDL and public ID synchronized with the confirmed deployment. Rebuild web
 after ID changes. Run `node --env-file-if-exists=.env scripts/check-program-id.mjs --environment`.
 Use the [deployment guide](devnet-deployment.md) for compiler generation, SBF tests, faucet rent

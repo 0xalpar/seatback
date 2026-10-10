@@ -63,7 +63,7 @@ export function createApi(demo = DEMO_MODE): SeatBackApi {
     const res=await fetch(`${API_BASE}${path}`,{...init,headers,credentials:"include"});
     if(res.status===204)return undefined as T;
     const data=await res.json().catch(()=>null);
-    if(!res.ok){if(res.status===401){sessionStorage.removeItem("seatback.csrf");window.dispatchEvent(new CustomEvent("seatback-session-expired"))}throw new ApiFailure(data?.error?.message??`Request failed (${res.status})`,res.status,data?.error?.code)}
+    if(!res.ok){if(res.status===401){const hadSession=!!sessionStorage.getItem("seatback.csrf");sessionStorage.removeItem("seatback.csrf");if(path!=="/v1/auth/session"||hadSession)window.dispatchEvent(new CustomEvent("seatback-session-expired"))}throw new ApiFailure(data?.error?.message??`Request failed (${res.status})`,res.status,data?.error?.code)}
     return data as T;
   }
   return {

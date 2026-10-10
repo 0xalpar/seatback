@@ -7,6 +7,26 @@ import {signAndSubmit,waitForReceipt} from "../src/transactions.ts";
 import {resolveWebConfig} from "../src/config.ts";
 import {localDateTime,eventSchedule} from "../src/schedule.ts";
 
+test("anonymous bootstrap is silent while expired authenticated requests notify",async()=>{
+ const priorFetch=globalThis.fetch;
+ const priorStorage=(globalThis as any).sessionStorage;
+ const priorWindow=(globalThis as any).window;
+ let token:string|null=null,notices=0;
+ (globalThis as any).sessionStorage={getItem:()=>token,removeItem:()=>{token=null}};
+ (globalThis as any).window={dispatchEvent:()=>{notices++}};
+ globalThis.fetch=async()=>new Response(JSON.stringify({error:{code:"NO_SESSION"}}),{status:401});
+ try {
+  await assert.rejects(createApi().request("/v1/auth/session"));
+  assert.equal(notices,0);
+  token="previous-session";
+  await assert.rejects(createApi().request("/v1/auth/session"));
+  assert.equal(notices,1);
+  assert.equal(token,null);
+  await assert.rejects(createApi().registrations());
+  assert.equal(notices,2);
+ } finally {globalThis.fetch=priorFetch;(globalThis as any).sessionStorage=priorStorage;(globalThis as any).window=priorWindow;}
+});
+
 test("event schedule defaults preserve local datetime values and reject cleared input",()=>{
  const start=new Date(2026,9,12,15,30);
  assert.equal(localDateTime(start.getTime()),"2026-10-12T15:30");

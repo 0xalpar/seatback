@@ -3,5 +3,9 @@ packages:
   - packages/*
 saveExact: true
 strictPeerDependencies: true
+overrides:
+  utf-8-validate: 5.0.10
 allowBuilds:
+  bufferutil: false
   esbuild: true
+  utf-8-validate: false

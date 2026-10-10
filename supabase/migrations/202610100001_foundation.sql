@@ -1,7 +1,7 @@
 -- Proposed foundation migration. Apply only to a disposable development database first.
 -- API uses server credentials; no browser table access is granted.
 begin;
-create extension if not exists pgcrypto;
+-- gen_random_uuid() is built into supported PostgreSQL (13+); no extension required.
 create table public.wallets (
   address text primary key check (address ~ '^[1-9A-HJ-NP-Za-km-z]{32,44}$'),
   created_at timestamptz not null default now()

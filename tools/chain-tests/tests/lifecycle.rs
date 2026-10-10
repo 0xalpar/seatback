@@ -137,4 +137,73 @@ async fn escrow_and_adversarial_lifecycle() {
  assert!(h.send(ix(a::ExpireOffer{event,offer},i::ExpireSeatOffer{}),&[]).await);
  assert_eq!(h.event(event).await.held_offers,0);
  assert!(register(&mut h,event,&bob,&gate,None).await);
+ // Exact early/late boundaries, payout substitution, wrong gate and arbiter exclusion.
+ let event=make_event(&mut h,5,&organizer,&gate,&arbiter,2).await;
+ assert!(!register(&mut h,event,&alice,&attacker,None).await);
+ assert!(!register(&mut h,event,&arbiter,&gate,None).await);
+ assert!(register(&mut h,event,&alice,&gate,None).await);
+ assert!(register(&mut h,event,&bob,&gate,None).await);
+ let mut forged=common(event,alice.pubkey(),organizer.pubkey(),alice.pubkey());forged.participant=attacker.pubkey();
+ assert!(!h.send(ix(forged,i::CancelReservation{}),&[&alice]).await);
+ let mut substituted=common(event,alice.pubkey(),organizer.pubkey(),alice.pubkey());
+ substituted.vault=common(event,bob.pubkey(),organizer.pubkey(),bob.pubkey()).vault;
+ assert!(!h.send(ix(substituted,i::CancelReservation{}),&[&alice]).await);
+ assert!(!h.send(ix(common(event,alice.pubkey(),organizer.pubkey(),attacker.pubkey()),i::CancelReservation{}),&[&attacker]).await);
+ h.clock(99).await;
+ let c=common(event,alice.pubkey(),organizer.pubkey(),alice.pubkey());let r=c.reservation;
+ assert!(h.send(ix(c,i::CancelReservation{}),&[&alice]).await);
+ assert_eq!(h.reservation(r).await.participant_paid_lamports,1000001);
+ h.clock(200).await;
+ let c=common(event,bob.pubkey(),organizer.pubkey(),bob.pubkey());let r=c.reservation;let vault=c.vault;let before=h.lamports(vault).await;
+ assert!(h.send(ix(c,i::CancelReservation{}),&[&bob]).await);
+ assert_eq!(h.reservation(r).await.participant_paid_lamports,0);
+ assert_eq!(h.reservation(r).await.organizer_allocated_lamports,1000001);
+ h.clock(86899).await;
+ assert!(!h.send(ix(common(event,bob.pubkey(),organizer.pubkey(),organizer.pubkey()),i::WithdrawAllocation{}),&[&organizer]).await);
+ h.clock(86900).await;
+ assert!(h.send(ix(a::FinalizeEvent{event},i::FinalizeEvent{}),&[]).await);
+ assert!(h.send(ix(common(event,bob.pubkey(),organizer.pubkey(),organizer.pubkey()),i::WithdrawAllocation{}),&[&organizer]).await);
+ assert_eq!(h.lamports(vault).await,before-1000001);
+ assert_eq!(h.event(event).await.outstanding_lamports,0);
+ // A valid offer is consumed once, including both held and occupied counters.
+ let event=make_event(&mut h,6,&organizer,&gate,&arbiter,1).await;
+ let offer=addr(b"offer",&[event.as_ref(),&[8;16]]);
+ assert!(h.send(ix(a::CreateOffer{event,offer,gate:gate.pubkey(),system_program:system_program::id()},
+    i::CreateSeatOffer{offer_id:[8;16],participant:alice.pubkey(),expires_at:50}),&[&gate]).await);
+ h.clock(49).await;assert!(register(&mut h,event,&alice,&gate,Some(offer)).await);
+ assert_eq!(h.event(event).await.held_offers,0);assert_eq!(h.event(event).await.occupied_seats,1);
+ assert!(!register(&mut h,event,&alice,&gate,Some(offer)).await);
+ assert!(!h.send(ix(a::ExpireOffer{event,offer},i::ExpireSeatOffer{}),&[]).await);
+ // Delegated scanner revocation and mandatory participant signature.
+ let event=make_event(&mut h,7,&organizer,&gate,&arbiter,2).await;
+ assert!(register(&mut h,event,&alice,&gate,None).await);assert!(register(&mut h,event,&bob,&gate,None).await);
+ let scanner=addr(b"scanner",&[event.as_ref(),attacker.pubkey().as_ref()]);
+ let set=||a::SetScanner{event,organizer:organizer.pubkey(),scanner,system_program:system_program::id()};
+ assert!(h.send(ix(set(),i::SetScanner{wallet:attacker.pubkey(),active:false}),&[&organizer]).await);
+ h.clock(300).await;
+ let attend=|p:Pubkey|{let c=common(event,p,organizer.pubkey(),attacker.pubkey());a::Attendance{event,reservation:c.reservation,vault:c.vault,participant:p,organizer:c.organizer,actor:c.actor,participant_signer:p,scanner_authorization:Some(scanner)}};
+ assert!(!h.send(ix(attend(alice.pubkey()),i::VerifyAttendance{qr_nonce_hash:[4;32]}),&[&alice,&attacker]).await);
+ assert!(h.send(ix(set(),i::SetScanner{wallet:attacker.pubkey(),active:true}),&[&organizer]).await);
+ let mut missing=ix(attend(bob.pubkey()),i::VerifyAttendance{qr_nonce_hash:[5;32]});
+ for meta in &mut missing.accounts {if meta.pubkey==bob.pubkey(){meta.is_signer=false;}}
+ assert!(!h.send(missing,&[&attacker]).await);
+ assert!(h.send(ix(attend(alice.pubkey()),i::VerifyAttendance{qr_nonce_hash:[4;32]}),&[&alice,&attacker]).await);
+ assert!(!h.send(ix(attend(alice.pubkey()),i::VerifyAttendance{qr_nonce_hash:[4;32]}),&[&alice,&attacker]).await);
+ // Cancellation resolves open disputes with full refund; dispute cutoff is strict.
+ h.clock(500).await;
+ let c=common(event,bob.pubkey(),organizer.pubkey(),bob.pubkey());let reservation=c.reservation;let vault=c.vault;
+ let dispute=addr(b"dispute",&[reservation.as_ref()]);
+ assert!(h.send(ix(a::OpenDispute{event,reservation,vault,participant:bob.pubkey(),organizer:organizer.pubkey(),actor:bob.pubkey(),dispute,system_program:system_program::id()},i::OpenDispute{evidence_hash:[6;32]}),&[&bob]).await);
+ h.clock(86900).await;assert!(!h.send(ix(a::FinalizeEvent{event},i::FinalizeEvent{}),&[]).await);
+ h.clock(86899).await; // Test-controlled clock for the before-cutoff cancellation path.
+ assert!(h.send(ix(a::ManageEvent{event,organizer:organizer.pubkey()},i::CancelEvent{}),&[&organizer]).await);
+ assert!(h.send(ix(a::CancelledRefund{event,reservation,vault,participant:bob.pubkey(),organizer:organizer.pubkey(),actor:attacker.pubkey(),dispute:Some(dispute)},i::ClaimCancelledEventRefund{}),&[&attacker]).await);
+ assert_eq!(h.event(event).await.outstanding_disputes,0);
+ assert_eq!(h.reservation(reservation).await.participant_paid_lamports,1000001);
+ // Lifetime cap remains consumed after a full refund.
+ let event=addr(b"event",&[organizer.pubkey().as_ref(),&[9;16]]);h.clock(1).await;
+ assert!(h.send(ix(a::CreateEvent{event,organizer:organizer.pubkey(),system_program:system_program::id()},i::CreateEvent{event_id:[9;16],policy:policy(),capacity:1,registration_limit:1,metadata_hash:[1;32],gate_authority:gate.pubkey(),dispute_authority:arbiter.pubkey()}),&[&organizer]).await);
+ assert!(register(&mut h,event,&alice,&gate,None).await);
+ assert!(h.send(ix(common(event,alice.pubkey(),organizer.pubkey(),alice.pubkey()),i::CancelReservation{}),&[&alice]).await);
+ assert!(!register(&mut h,event,&bob,&gate,None).await);
 }

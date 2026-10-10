@@ -1,10 +1,18 @@
 # Testing guidelines
-## Foundation
+## Automated checks
 pnpm install --frozen-lockfile
 pnpm check:foundation
 pnpm check
-pnpm check runs strict TypeScript checks, boundary arithmetic + fail-closed HTTP tests, and production builds.
-Node tests use reference policy oracle; passing them does not establish smart-contract behavior.
+pnpm check runs strict TypeScript checks, PostgreSQL/API/transaction tests and all production builds.
+tests/backend.test.mjs applies both migrations to PGlite (an embedded actual PostgreSQL engine),
+then tests RLS, immutable terms/snapshots, money constraints, Ed25519 login/replay/expiry,
+HTTP cookie/CSRF/origin behavior, private discovery, FIFO scheduling, QR leases/co-signing,
+intent tampering/partial signatures/ambiguous broadcast, finalized projections/stale slots and real IDL encoding.
+CI runs the same suite against PostgreSQL 16 with the pg driver as well. TEST_DATABASE_URL selects
+that mode; fixtures create/drop only randomized test schemas and roles, never reset public schema.
+RPC responses in Node tests are explicit test doubles; they do not establish smart-contract execution.
+See docs/backend-integration.md for compiled SBF test commands. tools/chain-tests executes the actual
+SBF program in solana-program-test, including system-program CPI. Reference policy tests are separate.
 
 ## Required before enabling financial UI
 Anchor local-validator integration tests:
@@ -24,7 +32,8 @@ Anchor local-validator integration tests:
   rent never paid as a deposit; total payouts <= deposit; no hidden close/realloc transfer.
 
 Database/API integration:
-Run migrations against disposable Postgres/Supabase, including pgcrypto and RLS.
+Run migrations against disposable Postgres/Supabase and verify RLS with real deployed database roles.
+gen_random_uuid is built into supported PostgreSQL; no pgcrypto extension is needed.
 Test as anon/authenticated roles (zero access), API organizer/participant/scanner/arbiter authorization,
 private search leakage, nonce/session expiry/replay, CSRF, CORS, code brute force, parameterized search.
 Run two workers for same queue vacancy; simulate RPC timeout/reorg/crash between SQL and chain, retries/outbox.

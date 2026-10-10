@@ -3,13 +3,23 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "exports": {".": "./dist/bootstrap.js"},
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "node --env-file-if-exists=../../.env --import tsx --watch src/index.ts",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "start": "node dist/index.js"
+    "start": "node --env-file-if-exists=../../.env dist/index.js"
   },
   "dependencies": {
-    "@seatback/contracts": "workspace:*"
+    "@seatback/chain-client": "workspace:*",
+    "@coral-xyz/anchor": "0.32.1",
+    "@seatback/contracts": "workspace:*",
+    "@solana/web3.js": "1.98.4",
+    "bs58": "6.0.0",
+    "pg": "8.16.3",
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "@types/pg": "8.15.5"
   }
 }

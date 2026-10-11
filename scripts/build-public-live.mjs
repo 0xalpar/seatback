@@ -1,0 +1,22 @@
+import {spawnSync} from 'node:child_process';
+import {readFile,writeFile,mkdir,readdir} from 'node:fs/promises';
+import {join,resolve} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {verify} from './verify-devnet.mjs';
+const root=fileURLToPath(new URL('../',import.meta.url));
+if(!process.env.SEATBACK_DEPLOYED_ELF)throw new Error('Verified deployed ELF required');
+const proof=await verify(resolve(process.env.SEATBACK_DEPLOYED_ELF));
+const env={...process.env,VITE_DEMO_MODE:'false',VITE_LOCAL_VALIDATOR:'false',VITE_API_BASE:'',VITE_API_BASE_URL:'',VITE_PROGRAM_ID:proof.programId,VITE_SEATBACK_PROGRAM_ID:proof.programId,VITE_SOLANA_RPC_URL:'https://api.devnet.solana.com'};
+const result=spawnSync(process.platform==='win32'?'pnpm.cmd':'pnpm',['--filter','@seatback/web','build'],{cwd:root,env,stdio:'inherit',shell:process.platform==='win32'});
+if(result.status!==0)process.exit(result.status??1);
+const target=join(root,'.cache/public-live-site');await mkdir(join(target,'worker'),{recursive:true});await mkdir(join(target,'dist/server'),{recursive:true});await mkdir(join(target,'dist/.openai'),{recursive:true});await mkdir(join(target,'.openai'),{recursive:true});
+const assets={};
+async function collect(dir,prefix='') {for(const entry of await readdir(dir,{withFileTypes:true})){const path=join(dir,entry.name),url=prefix+'/'+entry.name;if(entry.isDirectory())await collect(path,url);else {const type=entry.name.endsWith('.js')?'application/javascript':entry.name.endsWith('.css')?'text/css':entry.name.endsWith('.html')?'text/html':entry.name.endsWith('.svg')?'image/svg+xml':null;if(!type)throw new Error('Unsupported asset '+entry.name);const body=await readFile(path,'utf8');if(/localhost:8899|127\.0\.0\.1:8899/.test(body))throw new Error('Local RPC must not enter public build');assets[url]={type,body};}}}
+await collect(join(root,'apps/web/dist'));
+const source=await readFile(join(root,'infra/public-demo/live-worker.mjs'),'utf8');
+const worker=source+'\nconst assets='+JSON.stringify(assets)+';\nexport default createLiveWorker(assets);\n';
+await writeFile(join(target,'worker/index.js'),worker);await writeFile(join(target,'dist/server/index.js'),worker);
+const manifest={...JSON.parse(await readFile(join(root,'infra/public-demo/hosting.json'),'utf8'))};delete manifest.static;
+await writeFile(join(target,'.openai/hosting.json'),JSON.stringify(manifest));await writeFile(join(target,'dist/.openai/hosting.json'),JSON.stringify(manifest));
+await writeFile(join(target,'package.json'),JSON.stringify({private:true,type:'module'}));await writeFile(join(target,'README.md'),'Live SeatBack frontend and same-origin API proxy. Backend origin is runtime configuration; no secrets or keypairs are packaged.\n');
+console.log('Verified Devnet live Worker artifact prepared. Configure SEATBACK_BACKEND_ORIGIN before publication.');

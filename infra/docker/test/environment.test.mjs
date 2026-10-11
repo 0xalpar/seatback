@@ -5,6 +5,13 @@ import {tmpdir} from "node:os";
 import {join} from "node:path";
 import {configureEnvironment} from "../environment.mjs";
 
+test("hosted database URL preserves platform TLS settings and requires PostgreSQL",async()=>{
+  const env={DATABASE_URL:'postgresql://example:placeholder@db.example.invalid:6432/seatback?sslmode=verify-full'};
+  const before=env.DATABASE_URL;await configureEnvironment(env);assert.equal(env.DATABASE_URL,before);
+  await assert.rejects(configureEnvironment({DATABASE_URL:'https://example.invalid'}),/Invalid database protocol/);
+  await assert.rejects(configureEnvironment({}),/Database configuration required/);
+});
+
 test("runtime secrets are loaded from files and database passwords are URL encoded",async()=>{
   const dir=await mkdtemp(join(tmpdir(),"seatback-infra-"));
   try {

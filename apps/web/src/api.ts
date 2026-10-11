@@ -1,5 +1,6 @@
 import type { DisputeView, EventCapabilities, EventView, Page, RegistrationView, TxIntent, WaitlistView } from "@seatback/contracts";
 import { webConfig } from "./config";
+import {authTransport} from "./auth-transport";
 export {lamportsToSol,solToLamports} from "./money";
 
 const viteEnv=import.meta.env as ImportMetaEnv|undefined;
@@ -61,7 +62,8 @@ export function createApi(demo = DEMO_MODE): SeatBackApi {
     const headers=new Headers(init.headers); headers.set("Accept","application/json");
     if(init.body && !headers.has("Content-Type")) headers.set("Content-Type","application/json");
     if(method!=="GET"&&method!=="HEAD") { headers.set("X-CSRF-Token",sessionStorage.getItem("seatback.csrf")??""); if(!headers.has("Idempotency-Key"))headers.set("Idempotency-Key",crypto.randomUUID()); }
-    const res=await fetch(`${API_BASE}${path}`,{...init,headers,credentials:"include"});
+    const options={...init,headers,credentials:"include" as const};
+    const res=path.startsWith('/v1/auth/')?await authTransport(`${API_BASE}${path}`,options,path):await fetch(`${API_BASE}${path}`,options);
     if(res.status===204)return undefined as T;
     const data=await res.json().catch(()=>null);
     if(!res.ok){if(res.status===401){const hadSession=!!sessionStorage.getItem("seatback.csrf");sessionStorage.removeItem("seatback.csrf");if(path!=="/v1/auth/session"||hadSession)window.dispatchEvent(new CustomEvent("seatback-session-expired"))}throw new ApiFailure(data?.error?.message??`Request failed (${res.status})`,res.status,data?.error?.code)}

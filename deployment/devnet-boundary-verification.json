@@ -1,0 +1,82 @@
+{
+  "cluster": "devnet",
+  "programId": "5PZki4JDVr8Cd1DTCGCiRHNgXAnZBjAAJVc9HSrmCR97",
+  "verifiedAt": "2026-10-11T10:52:42.056Z",
+  "checks": [
+    "30/70 cancellation",
+    "late cancellation allocation",
+    "withdrawal blocked before 24-hour cutoff",
+    "real no-show dispute opening",
+    "arbiter resolution and full refund"
+  ],
+  "notTested": [
+    "withdrawal after actual 24-hour wait"
+  ],
+  "transactions": [
+    {
+      "intentId": "d2b6b467-080e-4a44-81d7-83657eb35573",
+      "instruction": "create_event",
+      "signature": "iqMYuAgRVcMb3DdagKUhCzy3zi2nGBqQPkeF1v21uehGdG2pBdjz2XcWrszkhV46GbSWzPto3Fd9rJnEpXVspkb",
+      "network": "devnet"
+    },
+    {
+      "intentId": "7dac3ff2-a903-4203-9e2b-fc03d77eba29",
+      "instruction": "register",
+      "signature": "66MzQakUGL4V3Hc5Qsgkk3ScWJbb5kqXe7QHP5NuyuSjEXGjGDYxdnyy1gs1E8hhrX7RZDmcdzHcT1GSAbJZbiFZ",
+      "network": "devnet"
+    },
+    {
+      "intentId": "63a1ec64-c1b5-45c5-969d-1c18330ab878",
+      "instruction": "cancel_reservation",
+      "signature": "3fXW5w2US4hEpriRgANrgkUy9TnxnZ9Pw8JXNGvhyMZBr7WCoWqmp2rYL6gS9WbB2hm4n335vAXbfLFPPu98ZgvY",
+      "network": "devnet"
+    },
+    {
+      "intentId": "3f40bac3-8286-441d-9cb8-101e8651c083",
+      "instruction": "create_event",
+      "signature": "4T6tEAG72o92DdNXF1Ft7sZtxJem3RJ3VMYN1mWGBAS1hwCRgQHy6Ub3skLth76UsbU8mbGWtdaiphuZTYcbVutC",
+      "network": "devnet"
+    },
+    {
+      "intentId": "dc0cbd05-c8ba-46c9-bbad-cdf7242a36f7",
+      "instruction": "register",
+      "signature": "47j3WPqu9YaZAsJV464JzNs6ah1tzMNzsNkeUUzx5sBD8vwWDtmhX8Gh9aT1DZk9ukiCmbjroHumTzPB9947AP2D",
+      "network": "devnet"
+    },
+    {
+      "intentId": "c8109e4f-f247-4b6a-8bf7-6974612e1660",
+      "instruction": "cancel_reservation",
+      "signature": "2gvQ66q4sBtdJq9UFMjt81KtYhXMj7kWUhiqdT5dgxzE5GT9nZ8wYijMC6ULJSfQYw9pzgmQCCciAc5vJCvtZ3Ez",
+      "network": "devnet"
+    },
+    {
+      "signature": "2thfF16tJU1D4ph2bN7RBJNs6CUZ3ZkynFdbK5xDmTSfDxoYENJT65B4UBQFn28ywXA4TnytGWGqkukufcBByrtr",
+      "status": "rejected-by-program",
+      "network": "devnet"
+    },
+    {
+      "intentId": "b33e0c9f-0b00-4317-b27b-13818d56aa9e",
+      "instruction": "create_event",
+      "signature": "56PH2w8M26MGdjAKYgTne2tWRwznZmiWdne6pgu5rLgZZcbLHioUVFtCL2VxzVxhyFsCcvh3xdHgi5e6vt1RBJZF",
+      "network": "devnet"
+    },
+    {
+      "intentId": "dbca9824-8ae6-4270-9284-3945e54cba9c",
+      "instruction": "register",
+      "signature": "2hoM9U8okW1G6uHXAYEuuB1FxBm6oGTbZcrMouS5T7723XELjeB2xHNWoh85TEpGgYrZpnSw4udFu1SgzeKiC51o",
+      "network": "devnet"
+    },
+    {
+      "intentId": "f423269b-d0e1-4557-9f4a-6133969a0887",
+      "instruction": "open_dispute",
+      "signature": "4QVyuhZc7ZmVTCNtGZivbKBLBBt2h54ReodWZ21XsZ3JbLHKYck9YvoSSoKjgFghdTFbaF3qwNXqiXemGj28JgSd",
+      "network": "devnet"
+    },
+    {
+      "intentId": "56ebaf11-b47b-491a-9b05-1d0766dc896e",
+      "instruction": "resolve_dispute",
+      "signature": "quochdp2593sUCZUcDx4h9K4Wu3sVt1b1LbEpsUxxYn86WaPjNoeH1ifhNn6bBEpji7hVsdq9s5zPVj4gNJH4Rz",
+      "network": "devnet"
+    }
+  ]
+}

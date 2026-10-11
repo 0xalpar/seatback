@@ -13,7 +13,7 @@
     "db:migrate": "pnpm --filter @seatback/contracts build && pnpm --filter @seatback/chain-client build && pnpm --filter @seatback/api build && node --env-file-if-exists=.env scripts/migrate.mjs",
     "build": "pnpm --filter @seatback/contracts build && pnpm --filter @seatback/chain-client build && pnpm --filter @seatback/api build && pnpm --filter @seatback/worker build && pnpm --filter @seatback/web build",
     "typecheck": "pnpm --filter @seatback/contracts build && pnpm --filter @seatback/chain-client build && pnpm --filter @seatback/api build && pnpm -r typecheck",
-    "test": "pnpm --filter @seatback/contracts build && pnpm --filter @seatback/chain-client build && pnpm --filter @seatback/api build && node --test tests/*.test.mjs && pnpm --filter @seatback/web test && node --test infra/docker/test/environment.test.mjs",
+    "test": "pnpm --filter @seatback/contracts build && pnpm --filter @seatback/chain-client build && pnpm --filter @seatback/api build && node --test tests/*.test.mjs && pnpm --filter @seatback/web test && node --test infra/docker/test/*.test.mjs",
     "check": "pnpm typecheck && pnpm test && pnpm build",
     "check:foundation": "node scripts/check-foundation.mjs"
   },

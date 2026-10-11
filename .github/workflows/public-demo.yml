@@ -9,24 +9,27 @@ jobs:
   external-https:
     runs-on: ubuntu-latest
     steps:
-      - name: Check anonymous HTTPS demo from an independent hosted machine
+      - name: Check live HTTPS frontend and API from an independent hosted machine
         run: |
           python3 - <<'PY'
-          import re, urllib.request
+          import json, re, urllib.request
           origin = 'https://seatback.alpar-dikkatli37347.chatgpt.site'
           def get(path):
               request = urllib.request.Request(origin + path, headers={'User-Agent': 'Mozilla/5.0 SeatBackPublicReadiness/1.0', 'Accept': '*/*'})
               with urllib.request.urlopen(request, timeout=30) as response:
                   assert response.status == 200
                   assert response.url.startswith(origin)
-                  return response.read().decode()
-          page = get('/')
-          assert 'http-equiv="Content-Security-Policy"' in page
-          assert "connect-src 'none'" in page
+                  return response.read().decode(), response.headers
+          page, headers = get('/')
+          assert "connect-src 'self' https://api.devnet.solana.com" in headers['Content-Security-Policy']
           entry = re.search(r'<script[^>]+src="([^"]+)"', page).group(1)
-          code = get(entry)
-          assert 'Read-only demo' in code
+          code, _ = get(entry)
           assert '127.0.0.1:8899' not in code and 'localhost:8899' not in code
-          assert '<div id="root">' in get('/organizer/events')
-          print('Anonymous HTTPS, SPA routing, read-only label and network isolation verified externally.')
+          assert '<div id="root">' in get('/organizer/events')[0]
+          health = json.loads(get('/health')[0])
+          assert health['status'] == 'ok' and health['cluster'] == 'devnet' and health['mode'] == 'backend'
+          events = json.loads(get('/v1/events')[0])
+          assert isinstance(events['items'], list)
+          assert all(not event['id'].startswith('evt-') for event in events['items'])
+          print('Live HTTPS, SPA routing, same-origin backend health, real event API and local-RPC isolation verified externally.')
           PY

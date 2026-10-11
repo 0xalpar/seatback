@@ -10,12 +10,10 @@ COPY packages/contracts/package.json packages/contracts/package.json
 COPY packages/chain-client/package.json packages/chain-client/package.json
 
 FROM dependencies AS production-dependencies
-RUN --mount=type=cache,id=seatback-pnpm,target=/pnpm/store \
-    pnpm install --prod --frozen-lockfile --ignore-scripts --store-dir=/pnpm/store
+RUN pnpm install --prod --frozen-lockfile --ignore-scripts --store-dir=/pnpm/store
 
 FROM dependencies AS build
-RUN --mount=type=cache,id=seatback-pnpm,target=/pnpm/store \
-    pnpm install --frozen-lockfile --store-dir=/pnpm/store
+RUN pnpm install --frozen-lockfile --store-dir=/pnpm/store
 COPY apps/api apps/api
 COPY apps/worker apps/worker
 COPY packages packages
@@ -57,3 +55,8 @@ CMD ["worker"]
 
 FROM runtime AS migrate
 CMD ["migrate"]
+
+# Platform chooses api/worker using SEATBACK_SERVICE; Compose targets above stay unchanged.
+FROM runtime AS hosted
+ENTRYPOINT ["node", "infra/docker/hosted-entrypoint.mjs"]
+CMD []

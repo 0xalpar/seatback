@@ -1,0 +1,86 @@
+{
+  "cluster": "devnet",
+  "genesis": "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG",
+  "programId": "5PZki4JDVr8Cd1DTCGCiRHNgXAnZBjAAJVc9HSrmCR97",
+  "verifiedAt": "2026-10-11T09:32:09.657Z",
+  "events": [
+    "d9ea4ff3-146d-4a68-b2dd-0db502ee6400",
+    "369bed6d-efc7-48a1-911c-af9631de9cdf"
+  ],
+  "checks": [
+    "registration escrow",
+    "100% early cancellation",
+    "automatic waitlist offer",
+    "offer acceptance",
+    "event cancellation refund",
+    "scanner+participant QR attendance",
+    "100% attendance refund"
+  ],
+  "transactions": [
+    {
+      "intentId": "28ce3995-73ec-4b85-94de-a7e6f1760100",
+      "instruction": "create_event",
+      "signature": "43sLs7LXdeLVr5RS91HfddHzG3mLNSnaYWKonGjL1CcRoscEVo1U9gj5d6NvfD1KboVp1D3Hs6NwxnnK2Nn2ASU8",
+      "network": "devnet"
+    },
+    {
+      "intentId": "ead76b5f-eb7f-4304-b88c-c70e28e5036b",
+      "instruction": "register",
+      "signature": "5VxGQgoM7qRJrv1uNyHyMXSbJwhjYrEe3pJssnME7LpUFY7d4ZvZ4HyiRRFLLcQN8J3J8kkBz3gP3j27t2MJo3Z1",
+      "network": "devnet"
+    },
+    {
+      "signature": "TNpqWG8tf1UtG2nrcznqupicyW8X4U9X7iZsqn69q6cXg5gW7oAJXsPKvYni1EPcvNMr4yaEpXMzMZLKA6yTzTj",
+      "status": "rejected-by-program",
+      "network": "devnet"
+    },
+    {
+      "intentId": "118956af-3aa1-4100-8f23-bbdaa3acb20e",
+      "instruction": "cancel_reservation",
+      "signature": "4a7eQZ4CVKY8FhdeQZXk3q53mC9KR6QcfKg3ECXUbfAPWqJKKKGbc3V1YPVBG8w7iqe54E5nr8x9mvWmyMpo8dew",
+      "network": "devnet"
+    },
+    {
+      "intentId": "2875ad63-edbb-4000-9269-1c4862a9866b",
+      "instruction": "accept_seat_offer",
+      "signature": "4AvVZzHESA6TB2m66oNogKvGbXAvRwrUamx1ofW4opoe8XCDRFsqvCdLyXumRDqTysEv214iTXaC2D1CDfTRX5C3",
+      "network": "devnet"
+    },
+    {
+      "intentId": "3028ea04-70a5-44cf-8fc6-b8ae8eb1b75b",
+      "instruction": "cancel_event",
+      "signature": "3TbhkJt4E7NasYFvA96oyHhsmu8odw8wmQPrsTb73DpYaUdAWxuQubiJYoqR9Z4ufXNMgsV65Xr454Q3VqNJnwdQ",
+      "network": "devnet"
+    },
+    {
+      "intentId": "6e0e3b80-7652-4a76-a0f9-5ada1c2d6613",
+      "instruction": "claim_cancelled_event_refund",
+      "signature": "2nVyb47asKhcRMyymZv52SWHmfDHgL8ZqEpqcoaXt7VGD6V4UAX5m8qH3XR7Gexg5sgRtKggRQNwPY634H81pvs7",
+      "network": "devnet"
+    },
+    {
+      "intentId": "4bc816d5-1158-4330-a581-a1182dde2c77",
+      "instruction": "create_event",
+      "signature": "3Ybseh3w1zuSTyLhkU7Doj6qJLWgvS6CWpkeK3ShqYF5gkct52pkmyBwJZ3dssmMrjCvL3u3SVhPYQnCwbpdbbDP",
+      "network": "devnet"
+    },
+    {
+      "intentId": "ea4a7927-bf1d-4d2c-bbf0-17ea38073565",
+      "instruction": "register",
+      "signature": "43KR64ynz3zhJaKR5rE6BT4ECa7T5vrZGeX3kajWpiLDdmzKST2NA29ruGvPVhiMZg4w3fgNu9f9mPyefE8sKCE1",
+      "network": "devnet"
+    },
+    {
+      "intentId": "07784538-9e61-4d80-b763-1b0648fe1643",
+      "instruction": "verify_attendance",
+      "signature": "2acUgsHFNRC1t6Fk9rcBrseWJwoCw5vPmsqZKFtTJcsRyFH7V1hvWL1M95NzGQZxhgP3NhESGoyFjTxPF4o9kBJ9",
+      "network": "devnet"
+    },
+    {
+      "intentId": "d256991b-2c8d-4a61-9973-a27142735ddc",
+      "instruction": "create_event",
+      "signature": "TbjGnxpjANxgnd452Kfiipsk45gz5GTTRySjzoyY62XMPhTwQwqdDZKaP1nvbwKxvrQNnM9WRbVCK6X3Q5oTWWt",
+      "network": "devnet"
+    }
+  ]
+}

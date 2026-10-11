@@ -41,6 +41,7 @@ export function createApi(demo = DEMO_MODE): SeatBackApi {
     if (demo) {
       await new Promise(r=>setTimeout(r,120));
       const method=(init.method??"GET").toUpperCase();
+      if(method!=="GET"&&method!=="HEAD") throw new ApiFailure("Read-only demo — wallet signing and all writes are disabled",501,"DEMO_READ_ONLY");
       if(method==="GET"&&(path.startsWith("/v1/events?") || path==="/v1/events")) return page(DEMO_EVENTS.filter(e=>e.visibility==="public" && `${e.title} ${e.location} ${e.description}`.toLowerCase().includes(queryOf(path)))) as T;
       if (method==="GET"&&/^\/v1\/events\/[^/]+$/.test(path)) { const id=path.split("/")[3]??""; const e=DEMO_EVENTS.find(x=>x.id===id); if(e)return e as T; throw new ApiFailure("Event not found",404,"NOT_FOUND"); }
       if(path.startsWith("/v1/me/registrations")) return page(DEMO_REGISTRATIONS) as T;

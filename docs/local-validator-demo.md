@@ -110,3 +110,11 @@ waitlist replacement and QR co-sign/refund with real Phantom approvals.
 Both projects preserve volumes on ordinary `down`. Do not use `down -v` unless you explicitly
 intend to discard local test ledger and matching database data together. Resetting only one
 creates inconsistent chain/database history.
+
+After a long shutdown, Agave's persisted ledger Clock may lag host time. A resumed process being
+healthy does not establish correct financial deadlines. The 2026-10-11 launch found about six
+hours of drift and correctly rejected host-timed offers. Preserve the old project/volumes; stop
+its containers, then run `./scripts/start-local-demo.ps1 -ProjectName seatback-local-20261011` to
+create a fresh paired ledger/database without deleting history or changing financial rules.
+The startup script remembers the selected project in ignored `.cache/local-project.txt`.
+Use that project name in subsequent Compose health/log commands. Never reset only the ledger.

@@ -11,6 +11,8 @@ const directory=await realpath(process.argv[2]),root=await realpath(new URL('../
 const rel=relative(root,directory);assert.ok(rel&&(rel.startsWith('..')||isAbsolute(rel)));
 const base='http://localhost:5174',rpc=new Connection('http://127.0.0.1:8899','finalized');
 const genesis=await rpc.getGenesisHash();assert.notEqual(genesis,'EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG');assert.ok(!genesis.startsWith('5eykt4Us'));
+const clock=await rpc.getAccountInfo(new PublicKey('SysvarC1ock11111111111111111111111111111111'));
+assert.ok(clock&&Math.abs(Date.now()/1000-Number(clock.data.readBigInt64LE(32)))<=30,'Local ledger Clock drift: preserve old volumes and start a fresh paired demo project; see docs/local-validator-demo.md');
 const chain=new ChainClient(rpc,new PublicKey(loadIdl().address));
 assert.ok((await rpc.getAccountInfo(chain.programId))?.executable,'Deploy and independently verify the program first');
 const results=[];

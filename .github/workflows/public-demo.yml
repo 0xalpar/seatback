@@ -15,7 +15,8 @@ jobs:
           import re, urllib.request
           origin = 'https://seatback.alpar-dikkatli37347.chatgpt.site'
           def get(path):
-              with urllib.request.urlopen(origin + path, timeout=30) as response:
+              request = urllib.request.Request(origin + path, headers={'User-Agent': 'Mozilla/5.0 SeatBackPublicReadiness/1.0', 'Accept': '*/*'})
+              with urllib.request.urlopen(request, timeout=30) as response:
                   assert response.status == 200
                   assert response.url.startswith(origin)
                   return response.read().decode()

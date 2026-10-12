@@ -1,9 +1,9 @@
 # SeatBack contributor instructions
 - Work only in the existing 0xalpar/seatback repository. Devnet and local validator only.
-- This phase is a foundation; do not present stubs, mocks or reference math as implemented chain security.
+- Distinguish implemented behavior from mocks, test coverage, deployment and security review.
 - Never commit .env files, wallet keypairs, seed phrases, service-role keys, private access codes or QR secrets.
 - Codex owns apps/api, apps/worker, programs, supabase, packages/chain-client and shared contracts.
-- Claude owns apps/web and frontend tests/docs. Coordinate shared contracts/root lockfile changes with backend.
+- Developer 2 (Codex) owns apps/web and frontend tests/docs. Coordinate shared contracts/root lockfile changes with backend.
 - Read docs/architecture.md, docs/onchain.md, docs/api-contract.md, docs/security.md and docs/testing.md first.
 - Preserve registered participant policy snapshots. Lock material event terms at first registration.
 - All money uses checked u64 lamports on-chain, bigint in JS, decimal strings in JSON.

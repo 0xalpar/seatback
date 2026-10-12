@@ -1,0 +1,50 @@
+# Explicit isolated real-validator test environment; never use this override for Devnet.
+services:
+  validator:
+    image: seatback-validator:2.3.13
+    build:
+      context: .cache/validator-image
+      dockerfile: ../../infra/docker/validator.Dockerfile
+    command: ["--ledger", "/ledger", "--bind-address", "0.0.0.0", "--rpc-port", "8899", "--limit-ledger-size", "50000000", "--quiet", "--bpf-program", "${SEATBACK_PROGRAM_ID}", "/program/seatback.so"]
+    volumes:
+      - local-validator-ledger:/ledger
+      - ./.cache/tested-sbf/target/deploy/seatback.so:/program/seatback.so:ro
+    ports: ["127.0.0.1:8899:8899", "127.0.0.1:8900:8900"]
+    networks:
+      application:
+        aliases: [api]
+      database: {}
+    healthcheck:
+      test: ["CMD", "solana", "--url", "http://127.0.0.1:8899", "cluster-version"]
+      interval: 5s
+      timeout: 4s
+      start_period: 30s
+      retries: 20
+  api:
+    networks: !reset []
+    network_mode: service:validator
+    environment:
+      ALLOW_LOCAL_VALIDATOR: "true"
+      SOLANA_RPC_URL: http://127.0.0.1:8899
+      WEB_ORIGIN: http://localhost:5174
+    depends_on:
+      validator:
+        condition: service_healthy
+  worker:
+    networks: !reset []
+    network_mode: service:validator
+    environment:
+      ALLOW_LOCAL_VALIDATOR: "true"
+      SOLANA_RPC_URL: http://127.0.0.1:8899
+      WEB_ORIGIN: http://localhost:5174
+    depends_on:
+      validator:
+        condition: service_healthy
+  web:
+    build:
+      args:
+        VITE_LOCAL_VALIDATOR: "true"
+        VITE_SOLANA_RPC_URL: http://127.0.0.1:8899
+    ports: !override ["127.0.0.1:5174:8080"]
+volumes:
+  local-validator-ledger: {}

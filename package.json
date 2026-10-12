@@ -8,16 +8,19 @@
   },
   "scripts": {
     "dev": "pnpm --filter @seatback/web dev",
-    "dev:api": "pnpm --filter @seatback/api dev",
-    "build": "pnpm --filter @seatback/contracts build && pnpm --filter @seatback/api build && pnpm --filter @seatback/web build",
-    "typecheck": "pnpm --filter @seatback/contracts build && pnpm -r typecheck",
-    "test": "pnpm --filter @seatback/contracts build && pnpm --filter @seatback/api build && node --test tests/*.test.mjs",
+    "dev:api": "pnpm --filter @seatback/contracts build && pnpm --filter @seatback/chain-client build && pnpm --filter @seatback/api dev",
+    "dev:worker": "pnpm --filter @seatback/contracts build && pnpm --filter @seatback/chain-client build && pnpm --filter @seatback/api build && pnpm --filter @seatback/worker dev",
+    "db:migrate": "pnpm --filter @seatback/contracts build && pnpm --filter @seatback/chain-client build && pnpm --filter @seatback/api build && node --env-file-if-exists=.env scripts/migrate.mjs",
+    "build": "pnpm --filter @seatback/contracts build && pnpm --filter @seatback/chain-client build && pnpm --filter @seatback/api build && pnpm --filter @seatback/worker build && pnpm --filter @seatback/web build",
+    "typecheck": "pnpm --filter @seatback/contracts build && pnpm --filter @seatback/chain-client build && pnpm --filter @seatback/api build && pnpm -r typecheck",
+    "test": "pnpm --filter @seatback/contracts build && pnpm --filter @seatback/chain-client build && pnpm --filter @seatback/api build && node --test tests/*.test.mjs && pnpm --filter @seatback/web test && node --test infra/docker/test/*.test.mjs",
     "check": "pnpm typecheck && pnpm test && pnpm build",
     "check:foundation": "node scripts/check-foundation.mjs"
   },
   "devDependencies": {
-    "typescript": "5.9.3",
+    "@electric-sql/pglite": "0.3.10",
     "@types/node": "22.18.6",
-    "tsx": "4.20.6"
+    "tsx": "4.20.6",
+    "typescript": "5.9.3"
   }
 }

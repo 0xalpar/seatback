@@ -1,0 +1,15 @@
+# Local verification record
+
+Verified on the operator's Windows computer with Docker Desktop Linux engine and Ubuntu 24.04 WSL2, on 2026-10-10/11. This is actual local execution, not CI-only startup and not a public Devnet deployment.
+
+- Both Compose configurations validate. Local PostgreSQL 16, API, worker, web and Agave validator are healthy; migration service exits 0. Database and ledger use separate persistent volumes. Ordinary restarts preserve data. PostgreSQL has no host port; external gate/password files are mounted read-only.
+- Browser: http://localhost:5174 displays actual API-derived events, search and event details, with a permanent local-validator label. The ordinary Devnet-ready environment remains at http://localhost:5173.
+- Executable program: `5PZki4JDVr8Cd1DTCGCiRHNgXAnZBjAAJVc9HSrmCR97`. Local genesis: `CH7uzn8CPPhDZMm767s43mprLnwzNPstGdeFJw4Punve`. The program was loaded at validator genesis; there is no public deployment signature.
+- ProgramData bytes independently match the tested 485,528-byte ELF: SHA256 `372ad3969383af465e814dec7257b2b49d5b56b8b038ec5d776dccd506b6f446`.
+- Signed real API rehearsal passed at 2026-10-10T22:27:13Z: event creation, wallet login, locked deposit, actual capacity rejection, unauthorized organizer action rejection, free waitlist, early full refund, automatic seat offer, acceptance, event cancellation/refund, scanner plus participant attendance signatures, attendance full refund, replay rejection, private invitation authorization and public-discovery exclusion. Finalized chain receipts, reservation state and vault conservation were checked against database projections. Public proof remains in ignored `.cache/local-results.json`; no private tokens or keys are published.
+- Local compiled-SBF adversarial lifecycle passed (1 test), plus Rust unit tests (4). Controlled Clock tests cover 30/70 and late cancellation, deadline boundaries, offer expiry/replacement, 24-hour disputes, unresolved-dispute settlement blocking, arbiter authorization and eligible settlement. These are actual SBF harness executions, not 24 hours elapsed on the RPC validator.
+- PostgreSQL-backed API integration tests passed (12), in isolated disposable schemas. Workspace tests, TypeScript checks and production builds passed. Wallet message replay/CSRF/logout checks passed against the running API. Mainnet configuration is rejected.
+
+Automated signing used existing dedicated test keys outside Git. No Phantom extension was available in the in-app browser: interactive Phantom login, signing and full browser financial workflows remain unverified. Public Devnet deployment and live transaction verification remain blocked by faucet funding. No further public faucet retries were made.
+
+Reproduce the local rehearsal with [local demo instructions](local-validator-demo.md). Tomorrow use [the deployment guide](devnet-deployment.md), independently verify deployment, then [the Phantom presentation sequence](demo-runbook.md). Never label local signatures as Devnet Explorer transactions.

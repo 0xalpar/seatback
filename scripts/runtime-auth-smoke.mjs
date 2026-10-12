@@ -1,0 +1,38 @@
+// Local-only wallet authentication against the running real API/PostgreSQL.
+// No transactions, faucet calls or private/session material are printed.
+import assert from 'node:assert/strict';
+import {readFile,realpath} from 'node:fs/promises';
+import {createPrivateKey,sign} from 'node:crypto';
+import {relative,isAbsolute} from 'node:path';
+import {createRequire} from 'node:module';
+const require=createRequire(new URL('../apps/api/package.json',import.meta.url));
+const {Keypair}=require('@solana/web3.js');
+if(process.env.CI)throw new Error('Local operator smoke only');
+const path=process.argv[2];
+if(!path||!isAbsolute(path))throw new Error('Supply an existing absolute local key path outside Git');
+const keyPath=await realpath(path),root=await realpath(new URL('../',import.meta.url));
+const rel=relative(root,keyPath);
+if(!rel||(!rel.startsWith('..')&&!isAbsolute(rel)))throw new Error('Key must be outside Git');
+const wallet=Keypair.fromSecretKey(Uint8Array.from(JSON.parse(await readFile(keyPath,'utf8'))));
+const base='http://localhost:5173';
+const headers={Origin:base,'Content-Type':'application/json'};
+const post=(path,body,extra={})=>fetch(base+path,{method:'POST',headers:{...headers,...extra},body:JSON.stringify(body)});
+assert.equal((await fetch(base+'/health')).status,200);
+assert.equal((await fetch(base+'/v1/auth/session')).status,401);
+const response=await post('/v1/auth/challenge',{wallet:wallet.publicKey.toBase58(),domain:'localhost:5173',uri:base});
+assert.equal(response.status,201);
+const challenge=await response.json();
+const privateKey=createPrivateKey({key:Buffer.concat([Buffer.from('302e020100300506032b657004220420','hex'),Buffer.from(wallet.secretKey.slice(0,32))]),format:'der',type:'pkcs8'});
+const body={challengeId:challenge.challengeId,wallet:wallet.publicKey.toBase58(),signatureBase64:sign(null,Buffer.from(challenge.message),privateKey).toString('base64')};
+const verified=await post('/v1/auth/verify',body);
+assert.equal(verified.status,200);
+const cookie=verified.headers.get('set-cookie')?.split(';')[0];
+assert.ok(cookie);
+const session=await verified.json();
+assert.equal(session.wallet,wallet.publicKey.toBase58());
+assert.ok((await post('/v1/auth/verify',body)).status>=400,'Challenge replay must fail');
+assert.equal((await fetch(base+'/v1/me/registrations',{headers:{Cookie:cookie}})).status,200);
+assert.equal((await post('/v1/auth/logout',{}, {Cookie:cookie,'X-CSRF-Token':'wrong'})).status,403);
+assert.equal((await post('/v1/auth/logout',{}, {Cookie:cookie,'X-CSRF-Token':session.csrfToken})).status,204);
+assert.equal((await fetch(base+'/v1/auth/session',{headers:{Cookie:cookie}})).status,401);
+console.log('Real local API/PostgreSQL wallet authentication, replay rejection, CSRF and logout passed. No chain transactions sent.');

@@ -1,0 +1,11 @@
+{
+  "cluster": "devnet",
+  "programId": "5PZki4JDVr8Cd1DTCGCiRHNgXAnZBjAAJVc9HSrmCR97",
+  "upgradeAuthority": "8aihFVj3RDQb1Li6sGhhRDumKXgzWG6sCbdMgDqcn7SR",
+  "dataAddress": "YZPqmPufky3mJ17yVnfjBspG8C2oPAwKLndzXERgpha",
+  "slot": 509854306,
+  "sha256": "372ad3969383af465e814dec7257b2b49d5b56b8b038ec5d776dccd506b6f446",
+  "signature": "1rZMwmHFwoa7taJg1SfgQaEGXDAYNH47Bz9Cfovc45V3f5ywqbPSqVVZV452jCSy5tTZyTgzm6TZJxD8AvmMnTB",
+  "explorer": "https://explorer.solana.com/tx/1rZMwmHFwoa7taJg1SfgQaEGXDAYNH47Bz9Cfovc45V3f5ywqbPSqVVZV452jCSy5tTZyTgzm6TZJxD8AvmMnTB?cluster=devnet",
+  "verified": "finalized account, loader, authority, bytecode and deployment transaction; no financial instructions executed"
+}

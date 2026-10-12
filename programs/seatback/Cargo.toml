@@ -13,4 +13,10 @@ no-idl = []
 no-log-ix-name = []
 idl-build = ["anchor-lang/idl-build"]
 [dependencies]
-anchor-lang = "=0.32.1"
+anchor-lang = { version = "=0.32.1", features = ["init-if-needed"] }
+sha2 = "=0.10.9"
+[build-dependencies]
+# Cargo resolver 2 separates host proc-macro features from target features. Anchor's
+# IDL macro needs Span::unwrap on the host, even when a normal dep disables it.
+proc-macro2 = { version = "=1.0.103", features = ["proc-macro"] }
+anchor-syn = "=0.32.1"

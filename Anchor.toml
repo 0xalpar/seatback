@@ -5,8 +5,9 @@ resolution = true
 skip-lint = false
 [provider]
 cluster = "Devnet"
-wallet = "~/.config/solana/id.json"
+wallet = "~/.config/seatback/devnet/deployer-keypair.json"
 [workspace]
 members = ["programs/seatback"]
-# No deployed program address is claimed. Generate a devnet keypair, replace
-# declare_id, add [programs.devnet], and run anchor keys sync before building.
+
+[programs.devnet]
+seatback = "5PZki4JDVr8Cd1DTCGCiRHNgXAnZBjAAJVc9HSrmCR97"

@@ -1,5 +1,10 @@
 # Vercel frontend + Railway backend
 
+Production domain: `https://seatback.vercel.app` (Beykent Blockchain / SeatBack).
+GitHub production tracking: `release/mvp`. Railway's canonical `WEB_ORIGIN`
+must equal this origin in both API and worker; the old Sites hostname is retired
+for authentication.
+
 Import the existing `0xalpar/seatback` GitHub repository. Set the production branch
 to `release/mvp`, root directory to the repository root (`.`), framework to Vite,
 and Node.js to 24.x. The root `vercel.json` defines pinned pnpm installation,

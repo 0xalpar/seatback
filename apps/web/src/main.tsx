@@ -80,4 +80,3 @@ function ScannerAccess({id,go}:{id:string;go:(s:string)=>void}){return <DetailLo
 function ArbiterAccess({go}:{go:(s:string)=>void}){return <DetailLoader load={async()=>{const disputes=await api.disputes(true);const caps=await Promise.all(disputes.items.map(d=>api.capabilities(d.eventId)));return caps.some(c=>c.canArbitrate)}} render={allowed=>allowed?<Arbiter go={go}/>:<Empty icon="⚑" title="No arbiter cases assigned" detail="The dispute queue is empty or this wallet has no arbiter capability for assigned cases."/>}/>}
 const root=document.getElementById("root");if(!root)throw new Error("Missing root");
 createRoot(root).render(<React.StrictMode><App/></React.StrictMode>);
-
